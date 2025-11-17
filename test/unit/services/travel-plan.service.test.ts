@@ -363,7 +363,7 @@ describe("TravelPlanService", () => {
     it("should use provided transport option - walk", async () => {
       // Arrange
       const noteContent = "Spacery po Starówce, wszystko w zasięgu pieszych wędrówek.";
-      const options = { transport: "walk" as const };
+      const options = { transport: "walking" as const };
       const mockResponse = { destination: "Kraków", duration: 2, days: [] };
       mockGetStructuredData.mockResolvedValue(mockResponse);
 
