@@ -107,14 +107,15 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     // Step 5: Verify session was created
     if (!data.session) {
       // If no session, it means email confirmation is required
-      // For MVP, we should have email confirmation disabled
+      // This should not happen in MVP - email confirmation should be disabled in Supabase
       return new Response(
         JSON.stringify({
-          error: "Configuration Error",
-          message: "Potwierdzenie email jest wymagane. Sprawdź swoją skrzynkę pocztową.",
+          error: "Service Configuration Required",
+          message: "Rejestracja wymaga konfiguracji serwera. Skontaktuj się z administratorem lub sprawdź ustawienia Supabase (Authentication → Email → wyłącz 'Confirm email').",
+          details: "Email confirmation is enabled in Supabase. Please disable it for seamless user registration.",
         }),
         {
-          status: 500,
+          status: 503,
           headers: { "Content-Type": "application/json" },
         }
       );
