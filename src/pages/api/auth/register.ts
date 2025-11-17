@@ -111,7 +111,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       return new Response(
         JSON.stringify({
           error: "Service Configuration Required",
-          message: "Rejestracja wymaga konfiguracji serwera. Skontaktuj się z administratorem lub sprawdź ustawienia Supabase (Authentication → Email → wyłącz 'Confirm email').",
+          message:
+            "Rejestracja wymaga konfiguracji serwera. Skontaktuj się z administratorem lub sprawdź ustawienia Supabase (Authentication → Email → wyłącz 'Confirm email').",
           details: "Email confirmation is enabled in Supabase. Please disable it for seamless user registration.",
         }),
         {
