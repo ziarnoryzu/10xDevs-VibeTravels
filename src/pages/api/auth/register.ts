@@ -78,6 +78,9 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
     // Step 4: Handle registration error
     if (error) {
+      // eslint-disable-next-line no-console
+      console.error("Supabase signUp error:", error);
+
       // Check if email already exists
       if (error.message.includes("already registered")) {
         return new Response(
@@ -92,10 +95,13 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         );
       }
 
+      // Return error with details for debugging
       return new Response(
         JSON.stringify({
           error: "Internal Server Error",
           message: "Wystąpił błąd podczas rejestracji. Spróbuj ponownie.",
+          debug: import.meta.env.DEV ? error.message : undefined, // Only in dev
+          hint: "Sprawdź logi serwera lub ustawienia Supabase Auth",
         }),
         {
           status: 500,
