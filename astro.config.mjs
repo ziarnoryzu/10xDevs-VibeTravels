@@ -9,8 +9,9 @@ import cloudflare from "@astrojs/cloudflare";
 
 // https://astro.build/config
 export default defineConfig({
-  site: "https://ziarnoryzu.github.io/10x-project/",
-  // base: "/10x-project", // Removed for local development
+  site: process.env.CF_PAGES
+    ? process.env.CF_PAGES_URL || "https://10xdevs-vibetravels.pages.dev"
+    : "http://localhost:3000",
   output: "server",
   integrations: [react(), sitemap()],
   server: { port: 3000 },

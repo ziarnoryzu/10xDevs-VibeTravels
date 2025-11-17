@@ -72,6 +72,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         data: {
           name,
         },
+        emailRedirectTo: undefined, // Disable email confirmation for MVP
       },
     });
 
@@ -103,7 +104,23 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       );
     }
 
-    // Step 5: Return success response
+    // Step 5: Verify session was created
+    if (!data.session) {
+      // If no session, it means email confirmation is required
+      // For MVP, we should have email confirmation disabled
+      return new Response(
+        JSON.stringify({
+          error: "Configuration Error",
+          message: "Potwierdzenie email jest wymagane. Sprawdź swoją skrzynkę pocztową.",
+        }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    // Step 6: Return success response
     return new Response(
       JSON.stringify({
         user: {
