@@ -85,6 +85,9 @@ jobs:
           E2E_USERNAME_ID: ${{ secrets.E2E_USERNAME_ID }}
           E2E_USERNAME: ${{ secrets.E2E_USERNAME }}
           E2E_PASSWORD: ${{ secrets.E2E_PASSWORD }}
+          DEFAULT_USER_ID: ${{ secrets.DEFAULT_USER_ID }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
         run: npx playwright test --reporter=html,json
 
       - name: Upload E2E coverage
@@ -94,6 +97,7 @@ jobs:
           name: e2e-test-coverage
           path: playwright-report/coverage/
           retention-days: 30
+          if-no-files-found: ignore
 
       - name: Upload Playwright report
         uses: actions/upload-artifact@v5
@@ -110,6 +114,7 @@ jobs:
           name: e2e-test-results
           path: test-results/
           retention-days: 30
+          if-no-files-found: ignore
 
   status-comment:
     name: Post Status Comment
@@ -149,6 +154,9 @@ jobs:
             | Lint | ${lintStatus} ${{ needs.lint.result }} |
             | Unit Tests | ${unitTestStatus} ${{ needs.unit-test.result }} |
             | E2E Tests | ${e2eTestStatus} ${{ needs.e2e-test.result }} |
+            
+            ### 📊 Artifacts
+            View all artifacts in the [workflow run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
             
             ---
             *Pipeline run: [#${{ github.run_number }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})*`;

@@ -62,6 +62,8 @@ export class NoteEditorPage {
    * Click the back to list button
    */
   async clickBackToList() {
+    await this.backToListButton.waitFor({ state: "visible", timeout: 15000 });
+    await this.backToListButton.click({ trial: true });
     await this.backToListButton.click();
   }
 

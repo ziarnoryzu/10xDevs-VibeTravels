@@ -42,7 +42,7 @@ export async function login(page: Page) {
   // Wait for the form to detect values and enable the button
   const loginButton = page.getByRole("button", { name: "Zaloguj się" });
   await loginButton.waitFor({ state: "visible", timeout: 5000 });
-  
+
   // Wait for button to be enabled (give React time to update state)
   await expect(loginButton).toBeEnabled({ timeout: 2000 });
 

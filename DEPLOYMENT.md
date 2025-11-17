@@ -45,7 +45,7 @@ Deploy this application to one of these platforms that support SSR:
 3. Set build command: `npm run build`
 4. Set output directory: `dist`
 5. Add environment variables
-6. Deploy!
+6. Deploy & enjoy!
 
 ## Environment Variables
 
