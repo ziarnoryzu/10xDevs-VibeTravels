@@ -89,6 +89,7 @@ jobs:
           E2E_PASSWORD: ${{ secrets.E2E_PASSWORD }}
           DEFAULT_USER_ID: ${{ secrets.DEFAULT_USER_ID }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
         run: |
           npm run dev:e2e > dev.log 2>&1 &
           SERVER_PID=$!
@@ -113,6 +114,7 @@ jobs:
           E2E_PASSWORD: ${{ secrets.E2E_PASSWORD }}
           DEFAULT_USER_ID: ${{ secrets.DEFAULT_USER_ID }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
         run: npx playwright test --reporter=html,json
 
       - name: Upload E2E coverage
