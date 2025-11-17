@@ -23,4 +23,4 @@ Testowanie:
 
 CI/CD i Hosting:
 - Github Actions do tworzenia pipeline’ów CI/CD
-- DigitalOcean do hostowania aplikacji za pośrednictwem obrazu docker
+- Cloudflare Pages do hostowania aplikacji
