@@ -3,9 +3,6 @@ name: Deploy to Cloudflare Pages
 on:
   workflow_dispatch: 
 
-env:
-  NODE_ENV: production
-
 jobs:
   lint:
     name: Lint Code
@@ -71,6 +68,7 @@ jobs:
 
       - name: Build project
         env:
+          NODE_ENV: production
           CF_PAGES: true
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
