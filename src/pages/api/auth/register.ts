@@ -72,11 +72,15 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         data: {
           name,
         },
+        emailRedirectTo: undefined, // Disable email confirmation for MVP
       },
     });
 
     // Step 4: Handle registration error
     if (error) {
+      // eslint-disable-next-line no-console
+      console.error("Supabase signUp error:", error);
+
       // Check if email already exists
       if (error.message.includes("already registered")) {
         return new Response(
@@ -91,10 +95,13 @@ export const POST: APIRoute = async ({ request, cookies }) => {
         );
       }
 
+      // Return error with details for debugging
       return new Response(
         JSON.stringify({
           error: "Internal Server Error",
           message: "Wystąpił błąd podczas rejestracji. Spróbuj ponownie.",
+          debug: import.meta.env.DEV ? error.message : undefined, // Only in dev
+          hint: "Sprawdź logi serwera lub ustawienia Supabase Auth",
         }),
         {
           status: 500,
@@ -103,7 +110,25 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       );
     }
 
-    // Step 5: Return success response
+    // Step 5: Verify session was created
+    if (!data.session) {
+      // If no session, it means email confirmation is required
+      // This should not happen in MVP - email confirmation should be disabled in Supabase
+      return new Response(
+        JSON.stringify({
+          error: "Service Configuration Required",
+          message:
+            "Rejestracja wymaga konfiguracji serwera. Skontaktuj się z administratorem lub sprawdź ustawienia Supabase (Authentication → Email → wyłącz 'Confirm email').",
+          details: "Email confirmation is enabled in Supabase. Please disable it for seamless user registration.",
+        }),
+        {
+          status: 503,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    // Step 6: Return success response
     return new Response(
       JSON.stringify({
         user: {

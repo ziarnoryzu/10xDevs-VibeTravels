@@ -5,11 +5,13 @@ import react from "@astrojs/react";
 import sitemap from "@astrojs/sitemap";
 import tailwindcss from "@tailwindcss/vite";
 import node from "@astrojs/node";
+import cloudflare from "@astrojs/cloudflare";
 
 // https://astro.build/config
 export default defineConfig({
-  site: "https://ziarnoryzu.github.io/10x-project/",
-  // base: "/10x-project", // Removed for local development
+  site: process.env.CF_PAGES
+    ? process.env.CF_PAGES_URL || "https://10xdevs-vibetravels.pages.dev"
+    : "http://localhost:3000",
   output: "server",
   integrations: [react(), sitemap()],
   server: { port: 3000 },
@@ -22,9 +24,7 @@ export default defineConfig({
       },
     },
   },
-  adapter: node({
-    mode: "standalone",
-  }),
+  adapter: process.env.CF_PAGES ? cloudflare() : node({ mode: "standalone" }),
   env: {
     schema: {
       // Public variables (accessible in both client and server)
@@ -40,6 +40,7 @@ export default defineConfig({
       SUPABASE_SERVICE_ROLE_KEY: envField.string({
         context: "server",
         access: "secret",
+        optional: true,
       }),
       OPENROUTER_API_KEY: envField.string({
         context: "server",
@@ -49,6 +50,7 @@ export default defineConfig({
       DEFAULT_USER_ID: envField.string({
         context: "server",
         access: "public",
+        optional: true,
       }),
     },
   },

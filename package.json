@@ -8,6 +8,7 @@
     "build": "astro check && astro build",
     "preview": "astro preview",
     "astro": "astro",
+    "lint": "eslint .",
     "test": "vitest run",
     "test:watch": "vitest --watch",
     "test:ui": "vitest --ui",
@@ -15,6 +16,7 @@
     "dev:e2e": "astro dev --mode test"
   },
   "dependencies": {
+    "@astrojs/cloudflare": "^12.2.0",
     "@astrojs/node": "^9.4.6",
     "@astrojs/react": "^4.4.0",
     "@astrojs/sitemap": "^3.6.0",

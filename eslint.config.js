@@ -73,6 +73,18 @@ const reactConfig = tseslint.config({
   },
 });
 
+// Node.js config files - allow Node.js globals
+const nodeConfigFilesConfig = tseslint.config({
+  files: ["*.config.{js,mjs,ts}", "*.config.*.{js,mjs,ts}"],
+  languageOptions: {
+    globals: {
+      process: true,
+      __dirname: true,
+      __filename: true,
+    },
+  },
+});
+
 export default tseslint.config(
   includeIgnoreFile(gitignorePath),
   {
@@ -83,6 +95,7 @@ export default tseslint.config(
   testingConfig,
   jsxA11yConfig,
   reactConfig,
+  nodeConfigFilesConfig,
   eslintPluginAstro.configs["flat/recommended"],
   eslintPluginPrettier
 );
