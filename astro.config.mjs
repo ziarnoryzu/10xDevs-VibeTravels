@@ -24,15 +24,7 @@ export default defineConfig({
       },
     },
   },
-  adapter: process.env.CF_PAGES
-    ? cloudflare({
-        platformProxy: {
-          enabled: true,
-        },
-      })
-    : node({
-        mode: "standalone",
-      }),
+  adapter: process.env.CF_PAGES ? cloudflare() : node({ mode: "standalone" }),
   env: {
     schema: {
       // Public variables (accessible in both client and server)
