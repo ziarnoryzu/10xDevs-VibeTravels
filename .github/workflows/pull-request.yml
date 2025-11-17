@@ -77,35 +77,8 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
 
-      # 🔍 DEBUG STEP - see what astro dev:e2e is doing
-      - name: Debug dev:e2e server
-        env:
-          NODE_ENV: test
-          OPENROUTER_MODEL: ${{ secrets.OPENROUTER_MODEL }}
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
-          E2E_USERNAME_ID: ${{ secrets.E2E_USERNAME_ID }}
-          E2E_USERNAME: ${{ secrets.E2E_USERNAME }}
-          E2E_PASSWORD: ${{ secrets.E2E_PASSWORD }}
-          DEFAULT_USER_ID: ${{ secrets.DEFAULT_USER_ID }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-        run: |
-          npm run dev:e2e > dev.log 2>&1 &
-          SERVER_PID=$!
-          echo "Waiting for dev server..."
-          sleep 15
-          echo "---- env (DEFAULT_USER_ID) ----"
-          env | grep DEFAULT_USER_ID || echo "DEFAULT_USER_ID not in env"
-          echo "---- curl / ----"
-          curl -i http://localhost:3000/ || true
-          echo "---- dev.log ----"
-          cat dev.log
-          kill $SERVER_PID || true
-
       - name: Run E2E tests
         env:
-          DEBUG: pw:webserver
           OPENROUTER_MODEL: ${{ secrets.OPENROUTER_MODEL }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
@@ -181,6 +154,9 @@ jobs:
             | Lint | ${lintStatus} ${{ needs.lint.result }} |
             | Unit Tests | ${unitTestStatus} ${{ needs.unit-test.result }} |
             | E2E Tests | ${e2eTestStatus} ${{ needs.e2e-test.result }} |
+            
+            ### 📊 Artifacts
+            View all artifacts in the [workflow run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
             
             ---
             *Pipeline run: [#${{ github.run_number }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})*`;
