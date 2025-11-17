@@ -49,6 +49,7 @@ export default defineConfig({
       DEFAULT_USER_ID: envField.string({
         context: "server",
         access: "public",
+        optional: true,
       }),
     },
   },
