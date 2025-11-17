@@ -5,6 +5,7 @@ import react from "@astrojs/react";
 import sitemap from "@astrojs/sitemap";
 import tailwindcss from "@tailwindcss/vite";
 import node from "@astrojs/node";
+import cloudflare from "@astrojs/cloudflare";
 
 // https://astro.build/config
 export default defineConfig({
@@ -22,9 +23,15 @@ export default defineConfig({
       },
     },
   },
-  adapter: node({
-    mode: "standalone",
-  }),
+  adapter: process.env.CF_PAGES
+    ? cloudflare({
+        platformProxy: {
+          enabled: true,
+        },
+      })
+    : node({
+        mode: "standalone",
+      }),
   env: {
     schema: {
       // Public variables (accessible in both client and server)
