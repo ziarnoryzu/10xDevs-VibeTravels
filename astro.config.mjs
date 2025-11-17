@@ -47,6 +47,7 @@ export default defineConfig({
       SUPABASE_SERVICE_ROLE_KEY: envField.string({
         context: "server",
         access: "secret",
+        optional: true,
       }),
       OPENROUTER_API_KEY: envField.string({
         context: "server",

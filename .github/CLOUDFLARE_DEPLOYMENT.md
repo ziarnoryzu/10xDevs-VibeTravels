@@ -42,13 +42,11 @@ Before the deployment workflow can run successfully, you need to configure the f
    - The name of your Cloudflare Pages project
    - Example: `vibe-travels` or `10x-project`
 
-### Application Secrets
-These are already required for your application to function:
+### Application Secrets (Required for Build)
+These secrets are needed during the build process:
 
 4. **`SUPABASE_URL`** - Your Supabase project URL
 5. **`SUPABASE_ANON_KEY`** - Supabase anonymous key (public)
-6. **`SUPABASE_SERVICE_ROLE_KEY`** - Supabase service role key (private)
-7. **`OPENROUTER_API_KEY`** - OpenRouter API key for AI features
 
 **Note**: `DEFAULT_USER_ID` is NOT needed in production - it's only used for local development to bypass authentication.
 
@@ -92,12 +90,14 @@ After creating your Cloudflare Pages project, add the following environment vari
 
 1. Go to: **Pages** → **Your Project** → **Settings** → **Environment variables**
 2. Add the following variables for **Production** environment:
-   - `SUPABASE_URL`
-   - `SUPABASE_ANON_KEY`
-   - `SUPABASE_SERVICE_ROLE_KEY`
-   - `OPENROUTER_API_KEY`
+   - `SUPABASE_URL` (required)
+   - `SUPABASE_ANON_KEY` (required)
+   - `SUPABASE_SERVICE_ROLE_KEY` (required for admin API operations)
+   - `OPENROUTER_API_KEY` (optional, for AI features)
 
-**Important**: Do NOT add `DEFAULT_USER_ID` in production - it's only for local development to bypass authentication. Production should use real Supabase authentication.
+**Important Notes**:
+- Do NOT add `DEFAULT_USER_ID` in production - it's only for local development to bypass authentication
+- `SUPABASE_SERVICE_ROLE_KEY` is NOT needed during build, but IS required at runtime for admin operations (API endpoints)
 
 ## How It Works
 

@@ -72,7 +72,6 @@ jobs:
           CF_PAGES: true
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
-          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
         run: npm run build
 
       - name: Deploy to Cloudflare Pages
