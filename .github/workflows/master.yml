@@ -1,9 +1,7 @@
 name: Deploy to Cloudflare Pages
 
 on:
-  push:
-    branches:
-      - master
+  workflow_dispatch: 
 
 env:
   NODE_ENV: production
@@ -46,15 +44,7 @@ jobs:
         run: npm ci
 
       - name: Run unit tests with coverage
-        run: npm run test:coverage
-
-      - name: Upload coverage reports
-        uses: actions/upload-artifact@v5
-        if: always()
-        with:
-          name: unit-test-coverage
-          path: coverage/
-          retention-days: 30
+        run: npm run test
 
   deploy:
     name: Deploy to Cloudflare Pages
@@ -84,7 +74,6 @@ jobs:
           CF_PAGES: true
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
         run: npm run build
 
