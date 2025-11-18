@@ -35,6 +35,9 @@ export const createSupabaseServerInstance = (context: { headers: Headers; cookie
         cookiesToSet.forEach(({ name, value, options }) => context.cookies.set(name, value, options));
       },
     },
+    global: {
+      fetch: fetch.bind(globalThis),
+    },
   });
 
   return supabase;
@@ -49,6 +52,9 @@ export const createSupabaseAdminClient = () => {
     auth: {
       autoRefreshToken: false,
       persistSession: false,
+    },
+    global: {
+      fetch: fetch.bind(globalThis),
     },
   });
 };
