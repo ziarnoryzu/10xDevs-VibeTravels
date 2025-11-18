@@ -12,7 +12,7 @@ if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
 
 export const cookieOptions: CookieOptionsWithName = {
   path: "/",
-  secure: true,
+  secure: import.meta.env.PROD, // Only require HTTPS in production
   httpOnly: true,
   sameSite: "lax",
 };

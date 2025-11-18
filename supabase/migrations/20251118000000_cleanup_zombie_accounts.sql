@@ -19,101 +19,88 @@
 -- =====================================================
 
 -- =====================================================
--- Function: delete_user_account
--- Purpose: Deletes a user from auth.users (with CASCADE)
--- Returns: void
--- Security: SECURITY DEFINER to bypass RLS and auth schema restrictions
+-- NOTE: User deletion is now handled by Supabase Admin API
 -- =====================================================
-CREATE OR REPLACE FUNCTION public.delete_user_account(user_id UUID)
-RETURNS VOID
+-- The delete_user_account() function has been REMOVED because:
+-- 1. Users don't have permissions to modify auth.users schema (even with SECURITY DEFINER)
+-- 2. The correct way to delete users is via Supabase Admin API: admin.deleteUser()
+-- 3. Admin API automatically triggers CASCADE deletion of all related data
+-- 4. This approach is more secure and follows Supabase best practices
+--
+-- Account deletion is now implemented in: src/pages/api/profiles/me.ts (DELETE endpoint)
+-- It uses: supabaseAdmin.auth.admin.deleteUser(userId)
+-- =====================================================
+
+-- =====================================================
+-- Function: find_zombie_accounts
+-- Purpose: Identifies users in auth.users without profiles (diagnostic only)
+-- Returns: Table of zombie account details
+-- =====================================================
+CREATE OR REPLACE FUNCTION public.find_zombie_accounts()
+RETURNS TABLE (
+  user_id UUID,
+  email TEXT,
+  created_at TIMESTAMPTZ
+)
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public
 AS $$
-BEGIN
-  -- Delete the user from auth.users
-  -- This will CASCADE delete:
-  -- - profiles (ON DELETE CASCADE)
-  -- - notes (ON DELETE CASCADE)
-  -- - travel_plans (ON DELETE CASCADE via notes)
-  DELETE FROM auth.users WHERE id = user_id;
-  
-  -- Note: If user doesn't exist, this is a no-op (no error)
-END;
-$$;
-
-COMMENT ON FUNCTION public.delete_user_account IS 
-  'Deletes a user from auth.users with CASCADE deletion of all related data. Requires SECURITY DEFINER to access auth schema.';
-
--- Grant execute permission to authenticated users
-GRANT EXECUTE ON FUNCTION public.delete_user_account(UUID) TO authenticated;
-
--- =====================================================
--- Function: cleanup_zombie_accounts
--- Purpose: Deletes users from auth.users who don't have profiles
--- Returns: Number of accounts deleted
--- =====================================================
-CREATE OR REPLACE FUNCTION public.cleanup_zombie_accounts()
-RETURNS INTEGER
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = public
-AS $$
-DECLARE
-  accounts_deleted INTEGER := 0;
-  user_record RECORD;
 BEGIN
   -- Find all users in auth.users without profiles
-  FOR user_record IN 
-    SELECT 
-      au.id,
-      au.email,
-      au.created_at
-    FROM auth.users au
-    LEFT JOIN public.profiles p ON au.id = p.id
-    WHERE p.id IS NULL
-  LOOP
-    -- Log the zombie account we're about to delete
-    RAISE NOTICE 'Deleting zombie account: % (created: %)', user_record.email, user_record.created_at;
-    
-    -- Delete from auth.users
-    -- This will cascade delete related data due to ON DELETE CASCADE
-    DELETE FROM auth.users WHERE id = user_record.id;
-    
-    accounts_deleted := accounts_deleted + 1;
-  END LOOP;
-  
-  RETURN accounts_deleted;
+  RETURN QUERY
+  SELECT 
+    au.id AS user_id,
+    au.email::TEXT AS email,
+    au.created_at
+  FROM auth.users au
+  LEFT JOIN public.profiles p ON au.id = p.id
+  WHERE p.id IS NULL
+  ORDER BY au.created_at DESC;
 END;
 $$;
 
-COMMENT ON FUNCTION public.cleanup_zombie_accounts IS 
-  'Removes zombie accounts (users in auth.users without profiles). Returns count of accounts deleted.';
+COMMENT ON FUNCTION public.find_zombie_accounts IS 
+  'Diagnostic function to identify zombie accounts (users in auth.users without profiles). Does not delete anything. Use Supabase Admin API to delete these accounts if needed.';
 
 -- =====================================================
--- Execute the cleanup
+-- Check for existing zombie accounts
 -- =====================================================
 DO $$
 DECLARE
-  deleted_count INTEGER;
+  zombie_count INTEGER;
 BEGIN
-  -- Run the cleanup function
-  deleted_count := public.cleanup_zombie_accounts();
+  -- Count zombie accounts
+  SELECT COUNT(*) INTO zombie_count
+  FROM auth.users au
+  LEFT JOIN public.profiles p ON au.id = p.id
+  WHERE p.id IS NULL;
   
   -- Log the result
-  RAISE NOTICE 'Zombie accounts cleanup completed. Deleted % account(s).', deleted_count;
+  IF zombie_count > 0 THEN
+    RAISE NOTICE '⚠️  Found % zombie account(s). Use find_zombie_accounts() to list them.', zombie_count;
+    RAISE NOTICE '⚠️  These accounts must be cleaned up manually using Supabase Admin API or Dashboard.';
+  ELSE
+    RAISE NOTICE '✅ No zombie accounts found.';
+  END IF;
 END $$;
 
 -- =====================================================
 -- Migration Complete
 -- 
--- The function cleanup_zombie_accounts() remains available for future use:
---   SELECT public.cleanup_zombie_accounts();
+-- To find zombie accounts:
+--   SELECT * FROM public.find_zombie_accounts();
 --
--- To check for zombie accounts before cleanup:
---   SELECT au.email, au.id, au.created_at 
---   FROM auth.users au
---   LEFT JOIN public.profiles p ON au.id = p.id
---   WHERE p.id IS NULL;
+-- To delete zombie accounts, use one of these methods:
+-- 
+-- Method 1: Supabase Dashboard
+--   Go to Authentication → Users → find user → click "..." → Delete user
+--
+-- Method 2: Admin API (in your backend code)
+--   const { error } = await supabaseAdmin.auth.admin.deleteUser(userId);
+--
+-- Method 3: SQL (manual, for each user)
+--   -- This requires direct database access and should be used as last resort
+--   DELETE FROM auth.users WHERE id = '<user-id>';
 -- =====================================================
 

@@ -274,20 +274,18 @@ export const DELETE: APIRoute = async ({ locals }) => {
       // Continue with deletion even if sign out fails
     }
 
-    // Step 2: Delete user from auth.users using admin client
-    // We use direct SQL instead of admin.deleteUser() because:
-    // - admin.deleteUser() may use "soft delete" instead of physical deletion
-    // - Direct SQL ensures immediate deletion and CASCADE triggers
-    // This will cascade delete all related data in the database:
-    // - profiles (via ON DELETE CASCADE from auth.users)
-    // - notes (via ON DELETE CASCADE from auth.users)
-    // - travel_plans (via ON DELETE CASCADE from notes)
+    // Step 2: Delete user from auth.users using Supabase Admin API
+    // This is the correct way to delete users in Supabase:
+    // - admin.deleteUser() has the necessary permissions (service_role_key)
+    // - It automatically triggers CASCADE deletion of related data:
+    //   - profiles (via ON DELETE CASCADE from auth.users)
+    //   - notes (via ON DELETE CASCADE from auth.users)
+    //   - travel_plans (via ON DELETE CASCADE from notes)
+    // - The email becomes available for re-registration
+    // - Complies with GDPR "right to be forgotten"
     const adminClient = createSupabaseAdminClient();
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { error: deleteError } = await (adminClient as any).rpc("delete_user_account", {
-      user_id: userId,
-    });
+    const { error: deleteError } = await adminClient.auth.admin.deleteUser(userId);
 
     if (deleteError) {
       // eslint-disable-next-line no-console

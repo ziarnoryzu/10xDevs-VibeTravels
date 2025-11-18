@@ -1,20 +1,19 @@
 -- =====================================================
--- Migration: Enable RLS for Production
+-- Migration: Enable RLS
 -- Created: 2025-11-18 12:00:00 UTC
--- Description: Re-enables Row Level Security and restores all security policies
+-- Description: Enables Row Level Security and creates all security policies
 -- 
--- IMPORTANT: This migration should only be applied to PRODUCTION environment
--- DO NOT run this in local development - it will break the dev setup
+-- This migration works in both development and production environments.
+-- In development, you can bypass RLS by using service_role key.
 -- 
 -- Tables Affected:
---   - profiles: RLS enabled + policies restored
---   - notes: RLS enabled + policies restored
---   - travel_plans: RLS enabled + policies restored
+--   - profiles: RLS enabled + policies created
+--   - notes: RLS enabled + policies created
+--   - travel_plans: RLS enabled + policies created
 --
 -- Prerequisites:
 --   1. Verify trigger on_auth_user_created is enabled (see scripts/check_trigger_status.sql)
---   2. Remove manual profile creation from /api/auth/register if trigger is working
---   3. Test delete_user_account() function works with RLS enabled
+--   2. Ensure user deletion is handled via Supabase Admin API (not SQL function)
 -- =====================================================
 
 -- =====================================================
@@ -195,47 +194,24 @@ COMMENT ON POLICY "Authenticated users can delete plans of their own notes" ON t
   'Allows authenticated users to delete travel plans associated with their own notes';
 
 -- =====================================================
--- Step 5: Verify delete_user_account() works with RLS
--- =====================================================
-
--- The delete_user_account() function uses SECURITY DEFINER which bypasses RLS
--- This ensures it can still delete from auth.users even with RLS enabled
--- No changes needed, but let's verify the function exists
-
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_proc WHERE proname = 'delete_user_account'
-  ) THEN
-    RAISE EXCEPTION 'delete_user_account() function not found. Please apply migration 20251118000000_cleanup_zombie_accounts.sql first.';
-  END IF;
-  
-  RAISE NOTICE '✅ delete_user_account() function verified';
-END $$;
-
--- =====================================================
 -- Migration Complete
 -- 
 -- What changed:
 -- 1. RLS is now ENABLED on all tables (profiles, notes, travel_plans)
--- 2. All security policies have been restored from initial schema
+-- 2. All security policies have been created
 -- 3. Users can now only access their own data
--- 4. delete_user_account() continues to work via SECURITY DEFINER
+-- 4. Account deletion is handled via Supabase Admin API (bypasses RLS automatically)
 --
--- Post-Migration Checklist:
+-- Important Notes:
+-- - In development, you can use service_role key to bypass RLS when needed
+-- - Account deletion must use Admin API: supabaseAdmin.auth.admin.deleteUser()
+-- - The Admin API automatically handles CASCADE deletion of profiles, notes, etc.
+--
+-- Post-Migration Testing:
 -- 1. Test user registration (verify trigger creates profiles)
 -- 2. Test user login and profile access
--- 3. Test account deletion flow
+-- 3. Test account deletion flow via API endpoint
 -- 4. Test notes and travel_plans CRUD operations
 -- 5. Verify users cannot access other users' data
---
--- Rollback (if needed):
--- If you need to rollback to dev mode with RLS disabled:
--- 1. Run: ALTER TABLE profiles DISABLE ROW LEVEL SECURITY;
--- 2. Run: ALTER TABLE notes DISABLE ROW LEVEL SECURITY;
--- 3. Run: ALTER TABLE travel_plans DISABLE ROW LEVEL SECURITY;
--- 4. Drop all policies (see 20251017120001_disable_rls_policies.sql)
---
--- NEVER rollback RLS in production - fix issues instead!
 -- =====================================================
 
