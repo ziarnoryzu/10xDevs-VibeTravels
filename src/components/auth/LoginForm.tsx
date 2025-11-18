@@ -128,9 +128,11 @@ export function LoginForm({ redirectTo = "/app/notes", successMessage = null }: 
     [redirectTo, isSubmitting]
   );
 
-  const handleOnboardingComplete = useCallback(() => {
-    // After onboarding is complete, redirect to target page
-    navigate(redirectTo);
+  const handleOnboardingComplete = useCallback(async () => {
+    // After onboarding is complete, close modal and redirect
+    setShowOnboarding(false);
+    // Delay to ensure session cookies are fully processed by browser
+    await navigate(redirectTo, { delay: 500 });
   }, [redirectTo]);
 
   const handleButtonMouseEnter = useCallback(() => {

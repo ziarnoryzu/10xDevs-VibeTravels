@@ -46,6 +46,7 @@ export function OnboardingModal({ isOpen, onComplete }: OnboardingModalProps) {
 
   const handleSkip = useCallback(() => {
     // Complete onboarding without saving preferences
+    // The parent component (LoginForm) will handle the delay before redirect
     onComplete();
   }, [onComplete]);
 

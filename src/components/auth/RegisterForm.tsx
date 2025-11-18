@@ -95,9 +95,11 @@ export function RegisterForm({ initialError = null }: RegisterFormProps) {
     setError(null);
   }, []);
 
-  const handleOnboardingComplete = useCallback(() => {
+  const handleOnboardingComplete = useCallback(async () => {
+    // After onboarding is complete, close modal and redirect
     setShowOnboarding(false);
-    navigate(Routes.notes.list());
+    // Delay to ensure session cookies are fully processed by browser
+    await navigate(Routes.notes.list(), { delay: 500 });
   }, []);
 
   return (
