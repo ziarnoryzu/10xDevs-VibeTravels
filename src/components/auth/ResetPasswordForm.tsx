@@ -7,10 +7,12 @@ import { PasswordStrength, validatePassword } from "@/components/ui/password-str
 import { navigate, buildUrl } from "@/lib/services/navigation.service";
 
 interface ResetPasswordFormProps {
-  code: string;
+  code: string | null;
+  tokenHash: string | null;
+  type: string | null;
 }
 
-export function ResetPasswordForm({ code }: ResetPasswordFormProps) {
+export function ResetPasswordForm({ code, tokenHash, type }: ResetPasswordFormProps) {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -42,6 +44,8 @@ export function ResetPasswordForm({ code }: ResetPasswordFormProps) {
           },
           body: JSON.stringify({
             code,
+            tokenHash,
+            type,
             password,
           }),
         });
