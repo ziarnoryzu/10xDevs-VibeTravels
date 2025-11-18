@@ -77,8 +77,16 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
     // Step 4: Handle registration error
     if (error) {
+      // eslint-disable-next-line no-console
+      console.error("Registration error details:", {
+        message: error.message,
+        status: error.status,
+        name: error.name,
+        fullError: error,
+      });
+
       // Check if email already exists
-      if (error.message.includes("already registered")) {
+      if (error.message && error.message.includes("already registered")) {
         return new Response(
           JSON.stringify({
             error: "Conflict",
@@ -94,7 +102,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       return new Response(
         JSON.stringify({
           error: "Internal Server Error",
-          message: "Wystąpił błąd podczas rejestracji. Spróbuj ponownie.",
+          message: `Błąd rejestracji: ${error.message || JSON.stringify(error)}`,
+          details: error,
         }),
         {
           status: 500,
@@ -103,7 +112,24 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       );
     }
 
-    // Step 5: Return success response
+    // Step 5: Create profile for the new user
+    // Note: We create the profile manually because the trigger on auth.users is disabled in local dev
+    if (data.user) {
+      const { error: profileError } = await supabase.from("profiles").insert({
+        id: data.user.id,
+        name: name,
+        preferences: {},
+      });
+
+      if (profileError) {
+        // eslint-disable-next-line no-console
+        console.error("Error creating profile:", profileError);
+        // Profile creation failed, but user was created - they can still login
+        // The profile will be attempted to be created by trigger or can be fixed later
+      }
+    }
+
+    // Step 6: Return success response
     return new Response(
       JSON.stringify({
         user: {

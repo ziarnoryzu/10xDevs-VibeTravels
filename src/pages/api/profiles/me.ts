@@ -4,6 +4,7 @@ import type { APIRoute } from "astro";
 import { z } from "zod";
 import type { UserProfileDTO } from "../../../types";
 import type { SupabaseClient } from "../../../db/supabase.client";
+import { createSupabaseAdminClient } from "../../../db/supabase.client";
 import type { Json } from "../../../db/database.types";
 
 export const prerender = false;
@@ -41,14 +42,17 @@ export const GET: APIRoute = async ({ locals }) => {
       .single();
 
     // Step 2: Handle not found case
+    // 410 Gone indicates the profile existed but was deleted (zombie account state)
+    // This happens when a user exists in auth.users but not in profiles table
     if (profileError || !profile) {
       return new Response(
         JSON.stringify({
-          error: "Not Found",
-          message: "Profile not found",
+          error: "Gone",
+          message:
+            "Profile no longer exists. Your account may have been deleted. Please contact support if this is unexpected.",
         }),
         {
-          status: 404,
+          status: 410,
           headers: { "Content-Type": "application/json" },
         }
       );
@@ -164,15 +168,16 @@ export const PUT: APIRoute = async ({ request, locals }) => {
       .single();
 
     if (updateError || !updatedProfile) {
-      // Check if profile doesn't exist
+      // Check if profile doesn't exist (zombie account state)
       if (updateError?.code === "PGRST116") {
         return new Response(
           JSON.stringify({
-            error: "Not Found",
-            message: "Profile not found",
+            error: "Gone",
+            message:
+              "Profile no longer exists. Your account may have been deleted. Please contact support if this is unexpected.",
           }),
           {
-            status: 404,
+            status: 410,
             headers: { "Content-Type": "application/json" },
           }
         );
@@ -241,11 +246,14 @@ export const PUT: APIRoute = async ({ request, locals }) => {
  * DELETE /api/profiles/me
  *
  * Permanently deletes the authenticated user's account and all associated data.
- * This includes:
- * - All travel plans associated with user's notes
- * - All user's notes
- * - User's profile
- * - User's auth account (if implemented)
+ *
+ * Process:
+ * 1. Sign out the user to invalidate the session
+ * 2. Delete the user from Supabase Auth using admin client
+ * 3. Database CASCADE rules automatically delete:
+ *    - User's profile (ON DELETE CASCADE from auth.users)
+ *    - User's notes (ON DELETE CASCADE from auth.users)
+ *    - Travel plans (ON DELETE CASCADE from notes)
  */
 export const DELETE: APIRoute = async ({ locals }) => {
   // User is guaranteed to exist by middleware
@@ -256,38 +264,38 @@ export const DELETE: APIRoute = async ({ locals }) => {
   const supabase = (locals as any).supabase as SupabaseClient;
 
   try {
-    // Step 1: Delete all travel plans associated with user's notes
-    // First, get all note IDs for the user
-    const { data: userNotes, error: notesListError } = await supabase.from("notes").select("id").eq("user_id", userId);
+    // Step 1: Sign out the user to invalidate the session
+    // This ensures the user won't have an active session after deletion
+    const { error: signOutError } = await supabase.auth.signOut();
 
-    if (notesListError) {
+    if (signOutError) {
       // eslint-disable-next-line no-console
-      console.error("Error fetching user notes for deletion:", notesListError);
-      // Continue with deletion even if this fails
+      console.error("Error signing out user during deletion:", signOutError);
+      // Continue with deletion even if sign out fails
     }
 
-    // Delete travel plans for these notes
-    if (userNotes && userNotes.length > 0) {
-      const noteIds = userNotes.map((note) => note.id);
-      const { error: plansDeleteError } = await supabase.from("travel_plans").delete().in("note_id", noteIds);
+    // Step 2: Delete user from auth.users using admin client
+    // We use direct SQL instead of admin.deleteUser() because:
+    // - admin.deleteUser() may use "soft delete" instead of physical deletion
+    // - Direct SQL ensures immediate deletion and CASCADE triggers
+    // This will cascade delete all related data in the database:
+    // - profiles (via ON DELETE CASCADE from auth.users)
+    // - notes (via ON DELETE CASCADE from auth.users)
+    // - travel_plans (via ON DELETE CASCADE from notes)
+    const adminClient = createSupabaseAdminClient();
 
-      if (plansDeleteError) {
-        // eslint-disable-next-line no-console
-        console.error("Error deleting travel plans:", plansDeleteError);
-        // Continue with deletion even if this fails
-      }
-    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error: deleteError } = await (adminClient as any).rpc("delete_user_account", {
+      user_id: userId,
+    });
 
-    // Step 2: Delete all user's notes
-    const { error: notesDeleteError } = await supabase.from("notes").delete().eq("user_id", userId);
-
-    if (notesDeleteError) {
+    if (deleteError) {
       // eslint-disable-next-line no-console
-      console.error("Error deleting notes:", notesDeleteError);
+      console.error("Error deleting user account:", deleteError);
       return new Response(
         JSON.stringify({
           error: "Internal Server Error",
-          message: "Failed to delete user notes",
+          message: "Failed to delete user account",
         }),
         {
           status: 500,
@@ -296,32 +304,7 @@ export const DELETE: APIRoute = async ({ locals }) => {
       );
     }
 
-    // Step 3: Delete user's profile
-    const { error: profileDeleteError } = await supabase.from("profiles").delete().eq("id", userId);
-
-    if (profileDeleteError) {
-      // eslint-disable-next-line no-console
-      console.error("Error deleting profile:", profileDeleteError);
-      return new Response(
-        JSON.stringify({
-          error: "Internal Server Error",
-          message: "Failed to delete user profile",
-        }),
-        {
-          status: 500,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
-    }
-
-    // Step 4: Delete user from Supabase Auth (optional - requires admin privileges)
-    // TODO: Implement when proper authentication is set up
-    // const { error: authDeleteError } = await supabase.auth.admin.deleteUser(userId);
-    // if (authDeleteError) {
-    //   console.error("Error deleting auth user:", authDeleteError);
-    // }
-
-    // Step 5: Return success
+    // Step 3: Return success
     return new Response(
       JSON.stringify({
         message: "Account deleted successfully",

@@ -121,9 +121,9 @@ export function useProfile(): UseProfileReturn {
         throw new Error(errorData.message || "Failed to delete account");
       }
 
-      // Redirect to home page after successful deletion
-      // In a real app with auth, this would redirect to /login
-      await navigate(Routes.home());
+      // Redirect to login page after successful deletion
+      // User is already signed out by the backend
+      await navigate(Routes.auth.login());
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Nie udało się usunąć konta. Spróbuj ponownie.";
       setError(errorMessage);
