@@ -65,7 +65,7 @@ export function ResetPasswordForm({ code, tokenHash, type }: ResetPasswordFormPr
         setIsSubmitting(false);
       }
     },
-    [canSubmit, code, password]
+    [canSubmit, code, tokenHash, type, password]
   );
 
   const handlePasswordChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {

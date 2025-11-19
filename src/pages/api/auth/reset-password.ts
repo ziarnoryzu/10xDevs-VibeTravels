@@ -64,9 +64,6 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
     const { code, tokenHash, type, password } = validationResult.data;
 
-    // Debug: Log flow type
-    console.log("Reset password attempt with flow:", code ? "PKCE (code)" : "Token Hash");
-
     // Step 3: Create Supabase client
     const supabase = createSupabaseServerInstance({
       cookies,
@@ -79,11 +76,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
 
       if (exchangeError) {
-        console.error("Exchange code error:", {
-          message: exchangeError.message,
-          status: exchangeError.status,
-          name: exchangeError.name,
-        });
+        // eslint-disable-next-line no-console
+        console.error("Exchange code error:", exchangeError.message);
 
         return new Response(
           JSON.stringify({
@@ -104,11 +98,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       });
 
       if (verifyError) {
-        console.error("Verify OTP error:", {
-          message: verifyError.message,
-          status: verifyError.status,
-          name: verifyError.name,
-        });
+        // eslint-disable-next-line no-console
+        console.error("Verify OTP error:", verifyError.message);
 
         return new Response(
           JSON.stringify({
