@@ -44,11 +44,13 @@ export class OpenRouterService {
    * but business logic layer (e.g., TravelPlanService) can override it by passing
    * a model parameter, typically from OPENROUTER_MODEL environment variable.
    *
+   * @param runtimeEnv - Optional Cloudflare runtime environment variables
    * @throws {Error} If the OPENROUTER_API_KEY environment variable is not set.
    */
-  constructor() {
+  constructor(runtimeEnv?: Record<string, string | undefined>) {
     // Load API key from environment variables
-    this.apiKey = import.meta.env.OPENROUTER_API_KEY;
+    // Try Cloudflare runtime first (for production), then fall back to build-time env
+    this.apiKey = runtimeEnv?.OPENROUTER_API_KEY || import.meta.env.OPENROUTER_API_KEY;
 
     // Fail-fast strategy: throw an error if the API key is missing
     if (!this.apiKey) {

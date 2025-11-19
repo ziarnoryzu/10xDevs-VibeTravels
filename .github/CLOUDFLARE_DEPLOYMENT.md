@@ -106,13 +106,22 @@ The `master.yml` workflow will automatically deploy your project using `wrangler
 
 ### Build-time (GitHub Secrets)
 - Used by the workflow during `npm run build`
-- Astro validates that all non-optional env vars are present during build
-- If missing, build will fail
+- Required for building the application with proper configuration
+- Variables are embedded in the build output where needed
 
-### Runtime (Cloudflare Pages Environment Variables)
-- Used when your API endpoints are called in production
-- If missing, API endpoints will return 500 errors
-- Even if build succeeds without runtime vars, the app will crash when trying to use AI features
+### Runtime (Cloudflare Pages Environment Variables) ⚠️ **CRITICAL**
+- **Cloudflare Pages provides environment variables at RUNTIME through `context.runtime.env`**
+- Build-time variables (from GitHub Secrets) are NOT automatically available at runtime
+- Application code is designed to check `context.runtime.env` FIRST, then fall back to build-time values
+- **Without runtime env vars, the application will crash with 500 errors when trying to:**
+  - Connect to Supabase database (GET/POST/PUT requests)
+  - Generate AI travel plans (OpenRouter API calls)
+
+### How Our Code Handles This
+The application is designed to work in both environments:
+1. **Local Development**: Uses variables from `.env` file (via `import.meta.env`)
+2. **Cloudflare Production**: Uses variables from `context.runtime.env` (set in Cloudflare Dashboard)
+3. **Fallback**: If runtime env is not available, falls back to build-time values
 
 ## How It Works
 
@@ -154,12 +163,26 @@ The `master.yml` workflow will automatically deploy your project using `wrangler
 - ✅ Check the secret name matches exactly: `OPENROUTER_API_KEY` (case-sensitive)
 - ✅ Re-run the workflow after adding the secret
 
-### API Endpoint Returns 500 Error (Travel Plan Generation Fails)
-- ✅ Verify `OPENROUTER_API_KEY` is set in Cloudflare Pages Environment Variables
-- ✅ Go to: Pages → Your Project → Settings → Environment variables
-- ✅ Ensure it's set for the **Production** environment
-- ✅ **After adding/changing, click "Redeploy" or push a new commit to trigger deployment**
-- ✅ Check Cloudflare Pages logs (Functions tab) for detailed error messages
+### API Endpoint Returns 500 Error (ALL endpoints, including GET)
+**Root Cause**: Missing runtime environment variables in Cloudflare Pages
+
+**Symptoms**:
+- GET `/api/notes/{id}/travel-plan` returns 500 immediately
+- POST `/api/notes/{id}/generate-plan` returns 500 immediately
+- Error message: "Missing Supabase environment variables" or "Missing OPENROUTER_API_KEY"
+
+**Solution**:
+1. ✅ Verify **ALL** environment variables are set in Cloudflare Pages:
+   - Go to: Pages → Your Project → Settings → Environment variables
+   - Ensure **Production** environment has:
+     - `SUPABASE_URL`
+     - `SUPABASE_ANON_KEY`
+     - `SUPABASE_SERVICE_ROLE_KEY`
+     - `OPENROUTER_API_KEY`
+2. ✅ Variable names must match EXACTLY (case-sensitive!)
+3. ✅ **After adding/changing, click "Redeploy"** - this is REQUIRED!
+4. ✅ Check Cloudflare Pages logs (Functions tab) for detailed error messages
+5. ✅ Test with a simple GET endpoint first (like fetching notes) to verify Supabase connection
 
 ### Environment Variables Not Available
 - Verify secrets are set in both GitHub and Cloudflare Dashboard
@@ -179,16 +202,32 @@ The `master.yml` workflow will automatically deploy your project using `wrangler
 
 ## Verification Checklist
 
-Before reporting issues, verify:
+### Before Deployment
+- [ ] `SUPABASE_URL` is in GitHub Secrets
+- [ ] `SUPABASE_ANON_KEY` is in GitHub Secrets
 - [ ] `OPENROUTER_API_KEY` is in GitHub Secrets
+- [ ] `CLOUDFLARE_API_TOKEN` is in GitHub Secrets
+- [ ] `CLOUDFLARE_ACCOUNT_ID` is in GitHub Secrets
+- [ ] `CLOUDFLARE_PROJECT_NAME` is in GitHub Secrets
+
+### After First Deployment
+- [ ] `SUPABASE_URL` is in Cloudflare Pages Environment Variables (Production)
+- [ ] `SUPABASE_ANON_KEY` is in Cloudflare Pages Environment Variables (Production)
+- [ ] `SUPABASE_SERVICE_ROLE_KEY` is in Cloudflare Pages Environment Variables (Production)
 - [ ] `OPENROUTER_API_KEY` is in Cloudflare Pages Environment Variables (Production)
-- [ ] `SUPABASE_URL` is in both places
-- [ ] `SUPABASE_ANON_KEY` is in both places
-- [ ] `SUPABASE_SERVICE_ROLE_KEY` is in Cloudflare Pages (not needed in GitHub Secrets)
-- [ ] After adding/changing Cloudflare variables, you triggered a new deployment
+- [ ] Variable names match EXACTLY (case-sensitive!)
+- [ ] After adding variables, clicked "Redeploy" in Cloudflare Dashboard
+
+### Testing Deployment
 - [ ] Build succeeds in GitHub Actions
-- [ ] Application loads without errors
-- [ ] Travel plan generation works (test by creating a note with 10+ words and generating a plan)
+- [ ] Deployment shows as "success" in Cloudflare Pages
+- [ ] Application loads without errors in browser
+- [ ] Can log in successfully
+- [ ] Can create a note
+- [ ] Can view existing notes (tests Supabase connection)
+- [ ] Can generate travel plan (tests OpenRouter API)
+- [ ] Check browser DevTools console for any errors
+- [ ] Check Cloudflare Pages Functions logs for runtime errors
 
 ## Additional Resources
 

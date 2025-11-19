@@ -9,14 +9,20 @@ import { TravelPlanContentSchema } from "../schemas/travel-plan.schema";
  * Service responsible for generating travel plans from notes using AI
  */
 export class TravelPlanService {
-  private openRouterService: OpenRouterService;
   private readonly model?: string;
 
   constructor() {
-    this.openRouterService = new OpenRouterService();
     // Use model from environment variable if provided
     // Otherwise OpenRouterService will use its default (claude-3.5-haiku)
     this.model = import.meta.env.OPENROUTER_MODEL;
+  }
+
+  /**
+   * Creates OpenRouterService instance with optional runtime environment
+   * @param runtimeEnv - Optional Cloudflare runtime environment variables
+   */
+  private createOpenRouterService(runtimeEnv?: Record<string, string | undefined>): OpenRouterService {
+    return new OpenRouterService(runtimeEnv);
   }
   /**
    * Validates that the note content meets minimum requirements
@@ -42,9 +48,17 @@ export class TravelPlanService {
    * @param noteContent - The content of the travel note
    * @param options - Optional personalization options (style, transport, budget)
    * @param userPreferences - Optional user preferences from profile (interests, cuisine, pace, etc.)
+   * @param runtimeEnv - Optional Cloudflare runtime environment variables
    * @returns Generated travel plan as structured JSON
    */
-  async generatePlan(noteContent: string, options?: TravelPlanOptions, userPreferences?: string[]): Promise<Json> {
+  async generatePlan(
+    noteContent: string,
+    options?: TravelPlanOptions,
+    userPreferences?: string[],
+    runtimeEnv?: Record<string, string | undefined>
+  ): Promise<Json> {
+    // Create OpenRouter service with runtime environment support
+    const openRouterService = this.createOpenRouterService(runtimeEnv);
     // Extract options with defaults
     const style = options?.style || "leisure";
     const transport = options?.transport || "public";
@@ -160,7 +174,7 @@ Pamiętaj o dostosowaniu planu do preferencji: styl ${style}, transport ${transp
 
     // Call OpenRouter API with structured data schema
     // Pass model from env var if set, otherwise OpenRouterService uses default (claude-3.5-haiku)
-    const travelPlanContent = await this.openRouterService.getStructuredData({
+    const travelPlanContent = await openRouterService.getStructuredData({
       systemPrompt,
       userPrompt,
       schema: TravelPlanContentSchema,

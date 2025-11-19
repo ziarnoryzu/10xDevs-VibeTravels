@@ -322,7 +322,9 @@ export const PUT: APIRoute = async ({ params, request, locals }) => {
 
     // Step 9: Regenerate travel plan with user preferences
     const noteContent = note.content as string;
-    const planContent = await travelPlanService.generatePlan(noteContent, options, userPreferences);
+    // Pass runtime environment for Cloudflare Pages support
+    const runtimeEnv = (locals as { runtime?: { env: Record<string, string | undefined> } }).runtime?.env;
+    const planContent = await travelPlanService.generatePlan(noteContent, options, userPreferences, runtimeEnv);
 
     // Step 10: Update travel plan in database
     const { data: updatedPlan, error: updateError } = await supabase

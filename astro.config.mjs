@@ -34,13 +34,16 @@ export default defineConfig({
   env: {
     schema: {
       // Public variables (accessible in both client and server)
+      // Optional at build-time for Cloudflare Pages (uses runtime env)
       SUPABASE_URL: envField.string({
         context: "server",
         access: "public",
+        optional: true,
       }),
       SUPABASE_ANON_KEY: envField.string({
         context: "server",
         access: "public",
+        optional: true,
       }),
       // Server-side only variables
       SUPABASE_SERVICE_ROLE_KEY: envField.string({
@@ -51,7 +54,7 @@ export default defineConfig({
       OPENROUTER_API_KEY: envField.string({
         context: "server",
         access: "secret",
-        optional: false,
+        optional: true, // Optional at build-time, validated at runtime (supports Cloudflare runtime env)
       }),
       DEFAULT_USER_ID: envField.string({
         context: "server",

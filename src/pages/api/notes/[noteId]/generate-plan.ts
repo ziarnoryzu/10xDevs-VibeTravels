@@ -151,7 +151,9 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
     // Step 8: Generate travel plan with user preferences
     // TypeScript guard: we already validated content is not null/empty
     const noteContent = note.content as string;
-    const planContent = await travelPlanService.generatePlan(noteContent, command.options, userPreferences);
+    // Pass runtime environment for Cloudflare Pages support
+    const runtimeEnv = (locals as { runtime?: { env: Record<string, string | undefined> } }).runtime?.env;
+    const planContent = await travelPlanService.generatePlan(noteContent, command.options, userPreferences, runtimeEnv);
 
     // Step 9: Save travel plan to database (upsert to handle unique constraint on note_id)
     const { data: travelPlan, error: planError } = await supabase

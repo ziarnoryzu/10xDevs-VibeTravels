@@ -6,8 +6,17 @@ import { createClient } from "@supabase/supabase-js";
 import { SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY } from "astro:env/server";
 import type { Database } from "./database.types";
 
-if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-  throw new Error("Missing Supabase environment variables");
+// Helper to get environment variable from either Cloudflare runtime or Astro env
+function getEnvVar(name: string, runtimeEnv?: Record<string, string | undefined>, fallback?: string): string {
+  // Try Cloudflare runtime first (for production)
+  if (runtimeEnv && runtimeEnv[name]) {
+    return runtimeEnv[name] as string;
+  }
+  // Fall back to build-time variable
+  if (fallback) {
+    return fallback;
+  }
+  throw new Error(`Missing required environment variable: ${name}`);
 }
 
 export const cookieOptions: CookieOptionsWithName = {
@@ -24,8 +33,16 @@ function parseCookieHeader(cookieHeader: string): { name: string; value: string 
   });
 }
 
-export const createSupabaseServerInstance = (context: { headers: Headers; cookies: AstroCookies }) => {
-  const supabase = createServerClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
+export const createSupabaseServerInstance = (context: {
+  headers: Headers;
+  cookies: AstroCookies;
+  runtime?: { env: Record<string, string | undefined> };
+}) => {
+  // Get environment variables with Cloudflare runtime support
+  const supabaseUrl = getEnvVar("SUPABASE_URL", context.runtime?.env, SUPABASE_URL);
+  const supabaseAnonKey = getEnvVar("SUPABASE_ANON_KEY", context.runtime?.env, SUPABASE_ANON_KEY);
+
+  const supabase = createServerClient<Database>(supabaseUrl, supabaseAnonKey, {
     cookieOptions,
     cookies: {
       getAll() {
@@ -43,12 +60,16 @@ export const createSupabaseServerInstance = (context: { headers: Headers; cookie
   return supabase;
 };
 
-export const createSupabaseAdminClient = () => {
-  if (!SUPABASE_SERVICE_ROLE_KEY) {
+export const createSupabaseAdminClient = (runtimeEnv?: Record<string, string | undefined>) => {
+  // Get environment variables with Cloudflare runtime support
+  const supabaseUrl = getEnvVar("SUPABASE_URL", runtimeEnv, SUPABASE_URL);
+  const supabaseServiceRoleKey = runtimeEnv?.SUPABASE_SERVICE_ROLE_KEY || SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!supabaseServiceRoleKey) {
     throw new Error("Missing SUPABASE_SERVICE_ROLE_KEY environment variable");
   }
 
-  return createClient<Database>(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+  return createClient<Database>(supabaseUrl, supabaseServiceRoleKey, {
     auth: {
       autoRefreshToken: false,
       persistSession: false,

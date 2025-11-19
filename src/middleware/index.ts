@@ -50,9 +50,11 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const { locals, cookies, url, request, redirect } = context;
 
   // Create Supabase client for all requests
+  // Pass runtime for Cloudflare Pages environment variables
   const supabase = createSupabaseServerInstance({
     cookies,
     headers: request.headers,
+    runtime: (locals as { runtime?: { env: Record<string, string | undefined> } }).runtime,
   });
 
   // Always set supabase client in locals (TypeScript workaround)
