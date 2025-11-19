@@ -50,6 +50,9 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     // Step 2: Validate request body with Zod
     const validationResult = ResetPasswordSchema.safeParse(body);
     if (!validationResult.success) {
+      // eslint-disable-next-line no-console
+      console.error("[Reset Password] Validation error:", validationResult.error.errors);
+
       return new Response(
         JSON.stringify({
           error: "Bad Request",
@@ -64,6 +67,9 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
     const { code, tokenHash, type, password } = validationResult.data;
 
+    // eslint-disable-next-line no-console
+    console.log("[Reset Password] Flow type:", code ? "PKCE (code)" : tokenHash ? "Token Hash" : "Unknown");
+
     // Step 3: Create Supabase client
     const supabase = createSupabaseServerInstance({
       cookies,
@@ -77,7 +83,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
       if (exchangeError) {
         // eslint-disable-next-line no-console
-        console.error("Exchange code error:", exchangeError.message);
+        console.error("[Reset Password] Exchange code error:", exchangeError.message, exchangeError.status);
 
         return new Response(
           JSON.stringify({
@@ -92,6 +98,9 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       }
     } else if (tokenHash && type === "recovery") {
       // Token hash flow: Verify OTP
+      // eslint-disable-next-line no-console
+      console.log("[Reset Password] Verifying token_hash...");
+
       const { error: verifyError } = await supabase.auth.verifyOtp({
         token_hash: tokenHash,
         type: "recovery",
@@ -99,7 +108,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
       if (verifyError) {
         // eslint-disable-next-line no-console
-        console.error("Verify OTP error:", verifyError.message);
+        console.error("[Reset Password] Verify OTP error:", verifyError.message, verifyError.status);
 
         return new Response(
           JSON.stringify({
@@ -126,17 +135,16 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     }
 
     // Step 5: Update the user's password
+    // eslint-disable-next-line no-console
+    console.log("[Reset Password] Updating password...");
+
     const { error: updateError } = await supabase.auth.updateUser({
       password,
     });
 
     if (updateError) {
       // eslint-disable-next-line no-console
-      console.error("Error updating password:", {
-        message: updateError.message,
-        status: updateError.status,
-        name: updateError.name,
-      });
+      console.error("[Reset Password] Error updating password:", updateError.message, updateError.status);
       return new Response(
         JSON.stringify({
           error: "Internal Server Error",
@@ -150,6 +158,9 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     }
 
     // Step 6: Return success response
+    // eslint-disable-next-line no-console
+    console.log("[Reset Password] Password updated successfully");
+
     return new Response(
       JSON.stringify({
         message: "Hasło zostało pomyślnie zmienione",

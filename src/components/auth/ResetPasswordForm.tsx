@@ -37,17 +37,18 @@ export function ResetPasswordForm({ code, tokenHash, type }: ResetPasswordFormPr
       setIsSubmitting(true);
 
       try {
+        // Filter out null values - send only defined parameters
+        const requestBody: Record<string, string> = { password };
+        if (code) requestBody.code = code;
+        if (tokenHash) requestBody.tokenHash = tokenHash;
+        if (type) requestBody.type = type;
+
         const response = await fetch("/api/auth/reset-password", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({
-            code,
-            tokenHash,
-            type,
-            password,
-          }),
+          body: JSON.stringify(requestBody),
         });
 
         const data = await response.json();
