@@ -56,6 +56,11 @@ export default defineConfig({
         access: "secret",
         optional: true, // Optional at build-time, validated at runtime (supports Cloudflare runtime env)
       }),
+      OPENROUTER_MODEL: envField.string({
+        context: "server",
+        access: "secret",
+        optional: true, // Optional - falls back to claude-3.5-haiku if not set
+      }),
       DEFAULT_USER_ID: envField.string({
         context: "server",
         access: "public",

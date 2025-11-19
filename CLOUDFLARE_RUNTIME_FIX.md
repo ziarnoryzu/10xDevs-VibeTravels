@@ -83,6 +83,7 @@ Dla środowiska **Production** dodaj:
 - `SUPABASE_ANON_KEY` = [twój Supabase anon key]
 - `SUPABASE_SERVICE_ROLE_KEY` = [twój Supabase service role key]
 - `OPENROUTER_API_KEY` = [twój OpenRouter API key]
+- `OPENROUTER_MODEL` = [nazwa modelu, np. `anthropic/claude-3.5-sonnet`] (opcjonalne, domyślnie `anthropic/claude-3.5-haiku`)
 
 ⚠️ **Wielkość liter ma znaczenie!** Nazwy muszą być dokładnie takie jak wyżej.
 

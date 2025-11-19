@@ -59,6 +59,10 @@ export class TravelPlanService {
   ): Promise<Json> {
     // Create OpenRouter service with runtime environment support
     const openRouterService = this.createOpenRouterService(runtimeEnv);
+
+    // Get model from runtime env (Cloudflare) or fall back to build-time env
+    const model = runtimeEnv?.OPENROUTER_MODEL || this.model;
+
     // Extract options with defaults
     const style = options?.style || "leisure";
     const transport = options?.transport || "public";
@@ -173,7 +177,7 @@ ${noteContent}
 Pamiętaj o dostosowaniu planu do preferencji: styl ${style}, transport ${transport}, budżet ${budget}.`;
 
     // Call OpenRouter API with structured data schema
-    // Pass model from env var if set, otherwise OpenRouterService uses default (claude-3.5-haiku)
+    // Pass model from runtime env (Cloudflare) or build-time env var, or undefined (uses default claude-3.5-haiku)
     const travelPlanContent = await openRouterService.getStructuredData({
       systemPrompt,
       userPrompt,
@@ -181,7 +185,7 @@ Pamiętaj o dostosowaniu planu do preferencji: styl ${style}, transport ${transp
       schemaName: "create_travel_plan",
       schemaDescription:
         "Tworzy ustrukturyzowany plan podróży z notatek użytkownika, uwzględniający preferencje dotyczące stylu, transportu i budżetu.",
-      model: this.model, // From OPENROUTER_MODEL env var, or undefined (uses default)
+      model: model, // From runtimeEnv.OPENROUTER_MODEL (Cloudflare) or build-time OPENROUTER_MODEL, or undefined (uses default)
       temperature: 0.7, // Some creativity but still consistent
       max_tokens: 8000, // Sufficient for long travel plans (5+ days)
     });

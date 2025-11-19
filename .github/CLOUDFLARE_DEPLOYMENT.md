@@ -94,6 +94,7 @@ The `master.yml` workflow will automatically deploy your project using `wrangler
    - `SUPABASE_ANON_KEY` (required)
    - `SUPABASE_SERVICE_ROLE_KEY` (required for admin API operations)
    - `OPENROUTER_API_KEY` ⚠️ **REQUIRED for AI travel plan generation - NOT OPTIONAL!**
+   - `OPENROUTER_MODEL` (optional, defaults to `anthropic/claude-3.5-haiku` if not set)
 
 3. **After adding/changing environment variables, you MUST click "Redeploy" or trigger a new deployment!**
 
@@ -215,6 +216,7 @@ The application is designed to work in both environments:
 - [ ] `SUPABASE_ANON_KEY` is in Cloudflare Pages Environment Variables (Production)
 - [ ] `SUPABASE_SERVICE_ROLE_KEY` is in Cloudflare Pages Environment Variables (Production)
 - [ ] `OPENROUTER_API_KEY` is in Cloudflare Pages Environment Variables (Production)
+- [ ] `OPENROUTER_MODEL` is in Cloudflare Pages Environment Variables (Production) - optional, but recommended
 - [ ] Variable names match EXACTLY (case-sensitive!)
 - [ ] After adding variables, clicked "Redeploy" in Cloudflare Dashboard
 
