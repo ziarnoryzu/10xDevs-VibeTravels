@@ -62,7 +62,10 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       );
     }
 
-    const { code, password } = validationResult.data;
+    const { code, tokenHash, type, password } = validationResult.data;
+
+    // Debug: Log flow type
+    console.log("Reset password attempt with flow:", code ? "PKCE (code)" : "Token Hash");
 
     // Step 3: Create Supabase client
     const supabase = createSupabaseServerInstance({
