@@ -67,14 +67,6 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
     // Step 4: Handle authentication error
     if (error) {
-      // Log detailed error for debugging (temporary)
-      // eslint-disable-next-line no-console
-      console.error("Login error:", {
-        message: error.message,
-        status: error.status,
-        name: error.name,
-      });
-
       return new Response(
         JSON.stringify({
           error: "Unauthorized",

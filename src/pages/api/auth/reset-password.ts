@@ -67,9 +67,6 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
     const { code, tokenHash, type, password } = validationResult.data;
 
-    // eslint-disable-next-line no-console
-    console.log("[Reset Password] Flow type:", code ? "PKCE (code)" : tokenHash ? "Token Hash" : "Unknown");
-
     // Step 3: Create Supabase client
     const supabase = createSupabaseServerInstance({
       cookies,
@@ -98,9 +95,6 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       }
     } else if (tokenHash && type === "recovery") {
       // Token hash flow: Verify OTP
-      // eslint-disable-next-line no-console
-      console.log("[Reset Password] Verifying token_hash...");
-
       const { error: verifyError } = await supabase.auth.verifyOtp({
         token_hash: tokenHash,
         type: "recovery",
@@ -135,9 +129,6 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     }
 
     // Step 5: Update the user's password
-    // eslint-disable-next-line no-console
-    console.log("[Reset Password] Updating password...");
-
     const { error: updateError } = await supabase.auth.updateUser({
       password,
     });
@@ -158,9 +149,6 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     }
 
     // Step 6: Return success response
-    // eslint-disable-next-line no-console
-    console.log("[Reset Password] Password updated successfully");
-
     return new Response(
       JSON.stringify({
         message: "Hasło zostało pomyślnie zmienione",
