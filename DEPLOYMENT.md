@@ -24,8 +24,8 @@ Deploy this application to one of these platforms that support SSR:
    - `SUPABASE_URL`
    - `SUPABASE_ANON_KEY`
    - `SUPABASE_SERVICE_ROLE_KEY`
-   - `DEFAULT_USER_ID`
-   - `OPENROUTER_API_KEY` (optional)
+   - `OPENROUTER_API_KEY` (required for AI travel plan generation)
+   - `DEFAULT_USER_ID` (optional, for development only)
 5. Deploy!
 
 ### 2. Netlify
@@ -44,24 +44,26 @@ Deploy this application to one of these platforms that support SSR:
 2. Connect your GitHub repository
 3. Set build command: `npm run build`
 4. Set output directory: `dist`
-5. Add environment variables
+5. Add environment variables (see below)
 6. Deploy & enjoy!
+
+⚠️ **For Cloudflare Pages deployment, see detailed guide:** [`.github/CLOUDFLARE_DEPLOYMENT.md`](.github/CLOUDFLARE_DEPLOYMENT.md)
 
 ## Environment Variables
 
 Required environment variables for deployment:
 
 ```bash
-# Supabase Configuration
+# Supabase Configuration (Required)
 SUPABASE_URL=your-supabase-url
 SUPABASE_ANON_KEY=your-supabase-anon-key
 SUPABASE_SERVICE_ROLE_KEY=your-supabase-service-role-key
 
-# Default User (for development)
-DEFAULT_USER_ID=your-default-user-id
-
-# OpenRouter API (optional)
+# OpenRouter API (Required for AI features)
 OPENROUTER_API_KEY=your-openrouter-api-key
+
+# Development Only (Optional)
+DEFAULT_USER_ID=your-default-user-id
 ```
 
 ## Current CI/CD Setup

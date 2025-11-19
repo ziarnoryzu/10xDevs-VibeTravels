@@ -51,7 +51,7 @@ export default defineConfig({
       OPENROUTER_API_KEY: envField.string({
         context: "server",
         access: "secret",
-        optional: true,
+        optional: false,
       }),
       DEFAULT_USER_ID: envField.string({
         context: "server",
