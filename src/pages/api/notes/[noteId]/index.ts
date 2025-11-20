@@ -74,7 +74,10 @@ export const GET: APIRoute = async ({ params, locals }) => {
       );
     }
 
-    // Step 4: Prepare response
+    // Step 4: Check if travel plan exists
+    const { data: travelPlan } = await supabase.from("travel_plans").select("id").eq("note_id", noteId).single();
+
+    // Step 5: Prepare response
     const response: NoteDTO = {
       id: note.id,
       user_id: note.user_id,
@@ -82,6 +85,7 @@ export const GET: APIRoute = async ({ params, locals }) => {
       content: note.content,
       created_at: note.created_at,
       updated_at: note.updated_at,
+      has_travel_plan: !!travelPlan,
     };
 
     return new Response(JSON.stringify(response), {
@@ -214,7 +218,10 @@ export const PUT: APIRoute = async ({ params, request, locals }) => {
       );
     }
 
-    // Step 6: Prepare response
+    // Step 6: Check if travel plan exists
+    const { data: travelPlan } = await supabase.from("travel_plans").select("id").eq("note_id", noteId).single();
+
+    // Step 7: Prepare response
     const response: NoteDTO = {
       id: updatedNote.id,
       user_id: updatedNote.user_id,
@@ -222,6 +229,7 @@ export const PUT: APIRoute = async ({ params, request, locals }) => {
       content: updatedNote.content,
       created_at: updatedNote.created_at,
       updated_at: updatedNote.updated_at,
+      has_travel_plan: !!travelPlan,
     };
 
     return new Response(JSON.stringify(response), {

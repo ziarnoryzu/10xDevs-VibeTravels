@@ -15,6 +15,7 @@ export interface NoteDTO {
   content: string | null;
   created_at: string;
   updated_at: string;
+  has_travel_plan: boolean;
 }
 
 /**

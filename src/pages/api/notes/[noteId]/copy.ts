@@ -98,6 +98,7 @@ export const POST: APIRoute = async ({ params, locals }) => {
       content: copiedNote.content,
       created_at: copiedNote.created_at,
       updated_at: copiedNote.updated_at,
+      has_travel_plan: false,
     };
 
     return new Response(JSON.stringify(response), {

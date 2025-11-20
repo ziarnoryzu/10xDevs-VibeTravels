@@ -45,20 +45,21 @@ export function useNoteFetch(noteId: string): UseNoteFetchReturn {
 
       const noteData: NoteDTO = await noteResponse.json();
 
-      // Fetch travel plan (may not exist)
+      // Fetch travel plan only if it exists
       let travelPlan: TravelPlanDTO | null = null;
-      try {
-        const planResponse = await fetch(`/api/notes/${noteId}/travel-plan`, {
-          method: "GET",
-          headers: { "Content-Type": "application/json" },
-        });
+      if (noteData.has_travel_plan) {
+        try {
+          const planResponse = await fetch(`/api/notes/${noteId}/travel-plan`, {
+            method: "GET",
+            headers: { "Content-Type": "application/json" },
+          });
 
-        // 404 is expected when plan doesn't exist yet - don't treat as error
-        if (planResponse.ok) {
-          travelPlan = await planResponse.json();
+          if (planResponse.ok) {
+            travelPlan = await planResponse.json();
+          }
+        } catch {
+          // Silently ignore plan fetch errors - plan is optional
         }
-      } catch {
-        // Silently ignore plan fetch errors - plan is optional
       }
 
       // Build view model
@@ -86,15 +87,19 @@ export function useNoteFetch(noteId: string): UseNoteFetchReturn {
   const refetchPlan = useCallback(async () => {
     if (!note) return;
 
-    const planResponse = await fetch(`/api/notes/${noteId}/travel-plan`, {
-      method: "GET",
-      headers: { "Content-Type": "application/json" },
-    });
-
-    // 404 is expected when plan doesn't exist yet - don't treat as error
+    // Always try to fetch plan when refetching (assumes plan was just generated)
     let travelPlan: TravelPlanDTO | null = null;
-    if (planResponse.ok) {
-      travelPlan = await planResponse.json();
+    try {
+      const planResponse = await fetch(`/api/notes/${noteId}/travel-plan`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      if (planResponse.ok) {
+        travelPlan = await planResponse.json();
+      }
+    } catch {
+      // Silently ignore errors
     }
 
     setNote((prev) => {

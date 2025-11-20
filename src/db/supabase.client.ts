@@ -40,9 +40,6 @@ export const createSupabaseServerInstance = (context: {
         cookiesToSet.forEach(({ name, value, options }) => context.cookies.set(name, value, options));
       },
     },
-    global: {
-      fetch: fetch.bind(globalThis),
-    },
   });
 
   return supabase;
@@ -58,9 +55,6 @@ export const createSupabaseAdminClient = (runtimeEnv?: Record<string, string | u
     auth: {
       autoRefreshToken: false,
       persistSession: false,
-    },
-    global: {
-      fetch: fetch.bind(globalThis),
     },
   });
 };
