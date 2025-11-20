@@ -15,34 +15,32 @@ interface OnboardingModalProps {
 export function OnboardingModal({ isOpen, onComplete }: OnboardingModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedPreferences, setSelectedPreferences] = useState<string[]>([]);
 
-  const handleSavePreferences = useCallback(
-    async (preferences: string[]) => {
-      setError(null);
-      setIsSubmitting(true);
+  const handleSavePreferences = useCallback(async () => {
+    setError(null);
+    setIsSubmitting(true);
 
-      try {
-        const response = await fetch("/api/profiles/me", {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ preferences }),
-        });
+    try {
+      const response = await fetch("/api/profiles/me", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ preferences: selectedPreferences }),
+      });
 
-        if (!response.ok) {
-          const data = await response.json();
-          throw new Error(data.message || "Nie udało się zapisać preferencji");
-        }
-
-        onComplete();
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Wystąpił błąd");
-        setIsSubmitting(false);
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.message || "Nie udało się zapisać preferencji");
       }
-    },
-    [onComplete]
-  );
+
+      onComplete();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Wystąpił błąd");
+      setIsSubmitting(false);
+    }
+  }, [onComplete, selectedPreferences]);
 
   const handleSkip = useCallback(() => {
     // Complete onboarding without saving preferences
@@ -50,11 +48,12 @@ export function OnboardingModal({ isOpen, onComplete }: OnboardingModalProps) {
     onComplete();
   }, [onComplete]);
 
-  // Reset error when modal opens
+  // Reset state when modal opens
   useEffect(() => {
     if (isOpen) {
       setError(null);
       setIsSubmitting(false);
+      setSelectedPreferences([]);
     }
   }, [isOpen]);
 
@@ -68,7 +67,8 @@ export function OnboardingModal({ isOpen, onComplete }: OnboardingModalProps) {
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto">
+        {/* Scrollable content */}
+        <div className="flex-1 overflow-y-auto min-h-0 pr-2">
           {error && (
             <div
               className="mb-4 p-3 rounded-md bg-destructive/10 text-destructive text-sm"
@@ -84,13 +84,25 @@ export function OnboardingModal({ isOpen, onComplete }: OnboardingModalProps) {
             onSubmit={handleSavePreferences}
             submitLabel="Zapisz i kontynuuj"
             isSubmitting={isSubmitting}
+            hideActions
+            onPreferencesChange={setSelectedPreferences}
           />
+        </div>
 
-          <div className="mt-4 pt-4 border-t">
-            <Button type="button" variant="ghost" onClick={handleSkip} disabled={isSubmitting} className="w-full">
-              Pomiń, uzupełnię później
-            </Button>
-          </div>
+        {/* Sticky footer with actions */}
+        <div className="flex-shrink-0 pt-4 border-t space-y-3">
+          <Button
+            type="button"
+            onClick={handleSavePreferences}
+            disabled={isSubmitting || selectedPreferences.length === 0}
+            className="w-full"
+            size="lg"
+          >
+            {isSubmitting ? "Zapisywanie..." : "Zapisz i kontynuuj"}
+          </Button>
+          <Button type="button" variant="ghost" onClick={handleSkip} disabled={isSubmitting} className="w-full">
+            Pomiń, uzupełnię później
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

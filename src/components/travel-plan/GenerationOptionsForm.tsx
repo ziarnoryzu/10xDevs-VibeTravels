@@ -62,118 +62,121 @@ export function GenerationOptionsForm({ existingPlan, isSubmitting, onSubmit }: 
   const isButtonDisabled = !isFormValid() || isSubmitting;
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Header */}
-      <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">Personalizuj swój plan podróży</h3>
-        <p className="text-sm text-gray-600">
-          Wybierz preferencje, aby wygenerować plan idealnie dopasowany do Twoich potrzeb.
-        </p>
-      </div>
+    <form onSubmit={handleSubmit} className="flex flex-col h-full min-h-0">
+      {/* Scrollable content */}
+      <div className="flex-1 overflow-y-auto min-h-0 pr-2 space-y-6">
+        {/* Header */}
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">Personalizuj swój plan podróży</h3>
+          <p className="text-sm text-gray-600">
+            Wybierz preferencje, aby wygenerować plan idealnie dopasowany do Twoich potrzeb.
+          </p>
+        </div>
 
-      {/* Warning if overwriting existing plan */}
-      {existingPlan && (
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-          <div className="flex items-start gap-3">
-            <svg
-              className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-              />
-            </svg>
+        {/* Warning if overwriting existing plan */}
+        {existingPlan && (
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+            <div className="flex items-start gap-3">
+              <svg
+                className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                />
+              </svg>
+              <div className="flex-1">
+                <h4 className="text-sm font-semibold text-amber-900 mb-1">Istniejący plan zostanie nadpisany</h4>
+                <p className="text-sm text-amber-700">
+                  Dla tej notatki istnieje już wygenerowany plan. Wygenerowanie nowego planu spowoduje nadpisanie
+                  poprzedniego.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Style selection */}
+        <div className="space-y-2">
+          <Label htmlFor="style" className="text-sm font-medium text-gray-900">
+            Styl podróży
+          </Label>
+          <Select value={style} onValueChange={(value) => setStyle(value as GenerationOptions["style"])}>
+            <SelectTrigger id="style" className="w-full">
+              <SelectValue placeholder="Wybierz styl podróży" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="adventure">Przygoda - aktywny wypoczynek i wyzwania</SelectItem>
+              <SelectItem value="leisure">Relaks - spokojne zwiedzanie i odpoczynek</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Transport selection */}
+        <div className="space-y-2">
+          <Label htmlFor="transport" className="text-sm font-medium text-gray-900">
+            Preferowany transport
+          </Label>
+          <Select value={transport} onValueChange={(value) => setTransport(value as GenerationOptions["transport"])}>
+            <SelectTrigger id="transport" className="w-full">
+              <SelectValue placeholder="Wybierz rodzaj transportu" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="car">Samochód - swoboda przemieszczania się</SelectItem>
+              <SelectItem value="public">Transport publiczny - ekologicznie i ekonomicznie</SelectItem>
+              <SelectItem value="walking">Pieszo - maksymalne zanurzenie w miejscu</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Budget selection */}
+        <div className="space-y-2">
+          <Label htmlFor="budget" className="text-sm font-medium text-gray-900">
+            Budżet
+          </Label>
+          <Select value={budget} onValueChange={(value) => setBudget(value as GenerationOptions["budget"])}>
+            <SelectTrigger id="budget" className="w-full">
+              <SelectValue placeholder="Wybierz poziom budżetu" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="economy">Ekonomiczny - tanie opcje i oszczędności</SelectItem>
+              <SelectItem value="standard">Standard - umiarkowane ceny i komfort</SelectItem>
+              <SelectItem value="luxury">Luksus - najwyższa jakość bez ograniczeń</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Confirmation checkbox for overwriting existing plan */}
+        {existingPlan && (
+          <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg">
+            <Checkbox
+              id="confirm-overwrite"
+              checked={confirmOverwrite}
+              onCheckedChange={(checked) => setConfirmOverwrite(checked === true)}
+              disabled={isSubmitting}
+            />
             <div className="flex-1">
-              <h4 className="text-sm font-semibold text-amber-900 mb-1">Istniejący plan zostanie nadpisany</h4>
-              <p className="text-sm text-amber-700">
-                Dla tej notatki istnieje już wygenerowany plan. Wygenerowanie nowego planu spowoduje nadpisanie
-                poprzedniego.
+              <Label
+                htmlFor="confirm-overwrite"
+                className="text-sm font-medium text-gray-900 cursor-pointer leading-relaxed"
+              >
+                Potwierdzam, że chcę nadpisać istniejący plan podróży
+              </Label>
+              <p className="text-xs text-gray-600 mt-1">
+                Ta akcja jest nieodwracalna. Poprzedni plan zostanie trwale zastąpiony nowym.
               </p>
             </div>
           </div>
-        </div>
-      )}
-
-      {/* Style selection */}
-      <div className="space-y-2">
-        <Label htmlFor="style" className="text-sm font-medium text-gray-900">
-          Styl podróży
-        </Label>
-        <Select value={style} onValueChange={(value) => setStyle(value as GenerationOptions["style"])}>
-          <SelectTrigger id="style" className="w-full">
-            <SelectValue placeholder="Wybierz styl podróży" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="adventure">Przygoda - aktywny wypoczynek i wyzwania</SelectItem>
-            <SelectItem value="leisure">Relaks - spokojne zwiedzanie i odpoczynek</SelectItem>
-          </SelectContent>
-        </Select>
+        )}
       </div>
 
-      {/* Transport selection */}
-      <div className="space-y-2">
-        <Label htmlFor="transport" className="text-sm font-medium text-gray-900">
-          Preferowany transport
-        </Label>
-        <Select value={transport} onValueChange={(value) => setTransport(value as GenerationOptions["transport"])}>
-          <SelectTrigger id="transport" className="w-full">
-            <SelectValue placeholder="Wybierz rodzaj transportu" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="car">Samochód - swoboda przemieszczania się</SelectItem>
-            <SelectItem value="public">Transport publiczny - ekologicznie i ekonomicznie</SelectItem>
-            <SelectItem value="walking">Pieszo - maksymalne zanurzenie w miejscu</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      {/* Budget selection */}
-      <div className="space-y-2">
-        <Label htmlFor="budget" className="text-sm font-medium text-gray-900">
-          Budżet
-        </Label>
-        <Select value={budget} onValueChange={(value) => setBudget(value as GenerationOptions["budget"])}>
-          <SelectTrigger id="budget" className="w-full">
-            <SelectValue placeholder="Wybierz poziom budżetu" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="economy">Ekonomiczny - tanie opcje i oszczędności</SelectItem>
-            <SelectItem value="standard">Standard - umiarkowane ceny i komfort</SelectItem>
-            <SelectItem value="luxury">Luksus - najwyższa jakość bez ograniczeń</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      {/* Confirmation checkbox for overwriting existing plan */}
-      {existingPlan && (
-        <div className="flex items-start gap-3 p-4 bg-gray-50 rounded-lg">
-          <Checkbox
-            id="confirm-overwrite"
-            checked={confirmOverwrite}
-            onCheckedChange={(checked) => setConfirmOverwrite(checked === true)}
-            disabled={isSubmitting}
-          />
-          <div className="flex-1">
-            <Label
-              htmlFor="confirm-overwrite"
-              className="text-sm font-medium text-gray-900 cursor-pointer leading-relaxed"
-            >
-              Potwierdzam, że chcę nadpisać istniejący plan podróży
-            </Label>
-            <p className="text-xs text-gray-600 mt-1">
-              Ta akcja jest nieodwracalna. Poprzedni plan zostanie trwale zastąpiony nowym.
-            </p>
-          </div>
-        </div>
-      )}
-
-      {/* Submit button */}
-      <div className="pt-4 border-t border-gray-200">
+      {/* Fixed submit button at bottom */}
+      <div className="flex-shrink-0 pt-4 mt-4 border-t border-gray-200">
         <Button type="submit" disabled={isButtonDisabled} className="w-full" size="lg">
           {isSubmitting ? (
             <>

@@ -114,7 +114,7 @@ export default function NoteDetailView({ noteId }: NoteDetailViewProps) {
   };
 
   return (
-    <div className="container mx-auto max-w-4xl p-4 md:p-6">
+    <div className="container mx-auto max-w-4xl px-4 md:px-6 pb-32 md:pb-6 pt-4 md:pt-6">
       <div className="space-y-6">
         {/* Header with back button and metadata */}
         <NoteDetailHeader
@@ -126,15 +126,17 @@ export default function NoteDetailView({ noteId }: NoteDetailViewProps) {
         {/* Note Editor */}
         <NoteEditor note={editorViewModel} wordCount={note.wordCount} onNoteChange={handleNoteChange} />
 
-        {/* Action Buttons */}
-        <NoteActions
-          isReadyForPlanGeneration={note.isReadyForPlanGeneration}
-          hasTravelPlan={note.travelPlan !== null}
-          isCopying={isCopying}
-          onGenerateClick={() => openModal("generatePlan")}
-          onCopyClick={handleCopy}
-          onDeleteClick={() => setIsDeleteDialogOpen(true)}
-        />
+        {/* Action Buttons - desktop only */}
+        <div className="hidden md:block">
+          <NoteActions
+            isReadyForPlanGeneration={note.isReadyForPlanGeneration}
+            hasTravelPlan={note.travelPlan !== null}
+            isCopying={isCopying}
+            onGenerateClick={() => openModal("generatePlan")}
+            onCopyClick={handleCopy}
+            onDeleteClick={() => setIsDeleteDialogOpen(true)}
+          />
+        </div>
 
         {/* Travel Plan View (if exists) */}
         {note.travelPlan && (
@@ -142,6 +144,20 @@ export default function NoteDetailView({ noteId }: NoteDetailViewProps) {
             <TravelPlanView plan={note.travelPlan} />
           </div>
         )}
+      </div>
+
+      {/* Action Buttons - mobile sticky footer */}
+      <div className="fixed bottom-0 left-0 right-0 z-10 bg-white border-t p-4 md:hidden shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
+        <div className="container mx-auto max-w-4xl">
+          <NoteActions
+            isReadyForPlanGeneration={note.isReadyForPlanGeneration}
+            hasTravelPlan={note.travelPlan !== null}
+            isCopying={isCopying}
+            onGenerateClick={() => openModal("generatePlan")}
+            onCopyClick={handleCopy}
+            onDeleteClick={() => setIsDeleteDialogOpen(true)}
+          />
+        </div>
       </div>
 
       {/* Delete confirmation dialog */}

@@ -12,6 +12,8 @@ interface ProfilePreferencesFormProps {
   cancelLabel?: string;
   isSubmitting?: boolean;
   showCancelButton?: boolean;
+  hideActions?: boolean;
+  onPreferencesChange?: (preferences: string[]) => void;
 }
 
 /**
@@ -26,18 +28,22 @@ export function ProfilePreferencesForm({
   cancelLabel = "Anuluj",
   isSubmitting = false,
   showCancelButton = false,
+  hideActions = false,
+  onPreferencesChange,
 }: ProfilePreferencesFormProps) {
   const [selectedPreferences, setSelectedPreferences] = useState<string[]>(initialPreferences);
 
-  const handleCheckboxChange = useCallback((preference: string, checked: boolean) => {
-    setSelectedPreferences((prev) => {
-      if (checked) {
-        return [...prev, preference];
-      } else {
-        return prev.filter((p) => p !== preference);
-      }
-    });
-  }, []);
+  const handleCheckboxChange = useCallback(
+    (preference: string, checked: boolean) => {
+      setSelectedPreferences((prev) => {
+        const newPreferences = checked ? [...prev, preference] : prev.filter((p) => p !== preference);
+        // Notify parent of preference changes
+        onPreferencesChange?.(newPreferences);
+        return newPreferences;
+      });
+    },
+    [onPreferencesChange]
+  );
 
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
@@ -95,17 +101,19 @@ export function ProfilePreferencesForm({
         </p>
       </div>
 
-      {/* Action buttons */}
-      <div className="flex gap-3">
-        <Button type="submit" disabled={isSubmitting || selectedPreferences.length === 0} className="flex-1">
-          {isSubmitting ? "Zapisywanie..." : submitLabel}
-        </Button>
-        {showCancelButton && onCancel && (
-          <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
-            {cancelLabel}
+      {/* Action buttons - only shown if hideActions is false */}
+      {!hideActions && (
+        <div className="flex gap-3">
+          <Button type="submit" disabled={isSubmitting || selectedPreferences.length === 0} className="flex-1">
+            {isSubmitting ? "Zapisywanie..." : submitLabel}
           </Button>
-        )}
-      </div>
+          {showCancelButton && onCancel && (
+            <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
+              {cancelLabel}
+            </Button>
+          )}
+        </div>
+      )}
     </form>
   );
 }
