@@ -63,15 +63,14 @@ Follow these instructions to set up the project on your local machine.
     Create a file named `.env` in the root of the project and add the following variables. You can get these keys from your Supabase and OpenRouter dashboards.
 
     ```env
-    # Supabase
+    # Supabase (Required)
     SUPABASE_URL="your-supabase-project-url"
     SUPABASE_ANON_KEY="your-supabase-anon-key"
+    SUPABASE_SERVICE_ROLE_KEY="your-supabase-service-role-key"
 
     # OpenRouter.ai
-    OPENROUTER_API_KEY="your-openrouter-api-key"
-    
-    # Development only
-    DEFAULT_USER_ID="your-default-user-id"
+    OPENROUTER_API_KEY="your-openrouter-api-key"  # Required (Secret)
+    OPENROUTER_MODEL="anthropic/claude-3.5-haiku" # Optional (Public - model name)
     ```
 
 5.  **Run the development server:**

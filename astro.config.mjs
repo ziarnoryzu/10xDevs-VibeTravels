@@ -34,37 +34,28 @@ export default defineConfig({
   env: {
     schema: {
       // Public variables (accessible in both client and server)
-      // Optional at build-time for Cloudflare Pages (uses runtime env)
       SUPABASE_URL: envField.string({
         context: "server",
         access: "public",
-        optional: true,
+        optional: false,
       }),
       SUPABASE_ANON_KEY: envField.string({
         context: "server",
         access: "public",
-        optional: true,
       }),
       // Server-side only variables
       SUPABASE_SERVICE_ROLE_KEY: envField.string({
         context: "server",
         access: "secret",
-        optional: true,
       }),
       OPENROUTER_API_KEY: envField.string({
         context: "server",
         access: "secret",
-        optional: true, // Optional at build-time, validated at runtime (supports Cloudflare runtime env)
       }),
       OPENROUTER_MODEL: envField.string({
         context: "server",
-        access: "secret",
-        optional: true, // Optional - falls back to claude-3.5-haiku if not set
-      }),
-      DEFAULT_USER_ID: envField.string({
-        context: "server",
         access: "public",
-        optional: true,
+        optional: true, // Optional - falls back to claude-3.5-haiku if not set
       }),
     },
   },

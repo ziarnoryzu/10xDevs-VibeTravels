@@ -6,19 +6,6 @@ import { createClient } from "@supabase/supabase-js";
 import { SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY } from "astro:env/server";
 import type { Database } from "./database.types";
 
-// Helper to get environment variable from either Cloudflare runtime or Astro env
-function getEnvVar(name: string, runtimeEnv?: Record<string, string | undefined>, fallback?: string): string {
-  // Try Cloudflare runtime first (for production)
-  if (runtimeEnv && runtimeEnv[name]) {
-    return runtimeEnv[name] as string;
-  }
-  // Fall back to build-time variable
-  if (fallback) {
-    return fallback;
-  }
-  throw new Error(`Missing required environment variable: ${name}`);
-}
-
 export const cookieOptions: CookieOptionsWithName = {
   path: "/",
   secure: import.meta.env.PROD, // Only require HTTPS in production
@@ -39,8 +26,9 @@ export const createSupabaseServerInstance = (context: {
   runtime?: { env: Record<string, string | undefined> };
 }) => {
   // Get environment variables with Cloudflare runtime support
-  const supabaseUrl = getEnvVar("SUPABASE_URL", context.runtime?.env, SUPABASE_URL);
-  const supabaseAnonKey = getEnvVar("SUPABASE_ANON_KEY", context.runtime?.env, SUPABASE_ANON_KEY);
+  // Prefer runtime values (Cloudflare Pages) over build-time values
+  const supabaseUrl = (context.runtime?.env.SUPABASE_URL || SUPABASE_URL) as string;
+  const supabaseAnonKey = (context.runtime?.env.SUPABASE_ANON_KEY || SUPABASE_ANON_KEY) as string;
 
   const supabase = createServerClient<Database>(supabaseUrl, supabaseAnonKey, {
     cookieOptions,
@@ -62,12 +50,9 @@ export const createSupabaseServerInstance = (context: {
 
 export const createSupabaseAdminClient = (runtimeEnv?: Record<string, string | undefined>) => {
   // Get environment variables with Cloudflare runtime support
-  const supabaseUrl = getEnvVar("SUPABASE_URL", runtimeEnv, SUPABASE_URL);
-  const supabaseServiceRoleKey = runtimeEnv?.SUPABASE_SERVICE_ROLE_KEY || SUPABASE_SERVICE_ROLE_KEY;
-
-  if (!supabaseServiceRoleKey) {
-    throw new Error("Missing SUPABASE_SERVICE_ROLE_KEY environment variable");
-  }
+  // Prefer runtime values (Cloudflare Pages) over build-time values
+  const supabaseUrl = (runtimeEnv?.SUPABASE_URL || SUPABASE_URL) as string;
+  const supabaseServiceRoleKey = (runtimeEnv?.SUPABASE_SERVICE_ROLE_KEY || SUPABASE_SERVICE_ROLE_KEY) as string;
 
   return createClient<Database>(supabaseUrl, supabaseServiceRoleKey, {
     auth: {

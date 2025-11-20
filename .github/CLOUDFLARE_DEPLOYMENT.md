@@ -52,20 +52,31 @@ Before the deployment workflow can run successfully, you need to configure the f
 
 **Note**: `DEFAULT_USER_ID` is NOT needed in production - it's only used for local development to bypass authentication.
 
-## Setting Up GitHub Secrets
+## Setting Up GitHub Secrets and Variables
 
-⚠️ **IMPORTANT**: GitHub Secrets are used during the BUILD process. Make sure ALL required secrets are added:
+⚠️ **IMPORTANT**: GitHub Secrets and Variables are used during the BUILD process.
+
+### GitHub Secrets (Sensitive Data)
 
 1. Go to your GitHub repository
-2. Navigate to: **Settings** → **Secrets and variables** → **Actions**
+2. Navigate to: **Settings** → **Secrets and variables** → **Actions** → **Secrets** tab
 3. Click **"New repository secret"**
 4. Add each secret with its corresponding value:
-   - `CLOUDFLARE_API_TOKEN`
-   - `CLOUDFLARE_ACCOUNT_ID`
-   - `CLOUDFLARE_PROJECT_NAME`
-   - `SUPABASE_URL`
-   - `SUPABASE_ANON_KEY`
-   - `OPENROUTER_API_KEY` ⚠️ **REQUIRED - NOT OPTIONAL!**
+   - `CLOUDFLARE_API_TOKEN` ⚠️ **REQUIRED**
+   - `CLOUDFLARE_ACCOUNT_ID` ⚠️ **REQUIRED**
+   - `CLOUDFLARE_PROJECT_NAME` ⚠️ **REQUIRED**
+   - `SUPABASE_URL` ⚠️ **REQUIRED**
+   - `SUPABASE_ANON_KEY` ⚠️ **REQUIRED**
+   - `SUPABASE_SERVICE_ROLE_KEY` ⚠️ **REQUIRED**
+   - `OPENROUTER_API_KEY` ⚠️ **REQUIRED**
+
+### GitHub Variables (Non-Sensitive Configuration)
+
+1. Go to your GitHub repository
+2. Navigate to: **Settings** → **Secrets and variables** → **Actions** → **Variables** tab
+3. Click **"New repository variable"**
+4. Add configuration variables:
+   - `OPENROUTER_MODEL` = `anthropic/claude-3.5-haiku` (or your preferred model name)
 
 ## Cloudflare Pages Project Setup
 
@@ -90,11 +101,16 @@ The `master.yml` workflow will automatically deploy your project using `wrangler
 
 1. Go to: **Pages** → **Your Project** → **Settings** → **Environment variables**
 2. Add the following variables for **Production** environment:
+   
+   **Secrets (Encrypt in Cloudflare Dashboard):**
    - `SUPABASE_URL` (required)
    - `SUPABASE_ANON_KEY` (required)
    - `SUPABASE_SERVICE_ROLE_KEY` (required for admin API operations)
    - `OPENROUTER_API_KEY` ⚠️ **REQUIRED for AI travel plan generation - NOT OPTIONAL!**
+   
+   **Plain Text (No encryption needed):**
    - `OPENROUTER_MODEL` (optional, defaults to `anthropic/claude-3.5-haiku` if not set)
+     - This is just a model name like `"anthropic/claude-3-opus"` - not a secret
 
 3. **After adding/changing environment variables, you MUST click "Redeploy" or trigger a new deployment!**
 
@@ -102,6 +118,7 @@ The `master.yml` workflow will automatically deploy your project using `wrangler
 - Do NOT add `DEFAULT_USER_ID` in production - it's only for local development to bypass authentication
 - `SUPABASE_SERVICE_ROLE_KEY` is NOT needed during build, but IS required at runtime for admin operations (API endpoints)
 - `OPENROUTER_API_KEY` is needed in BOTH build-time (GitHub Secrets) and runtime (Cloudflare Pages Environment Variables)
+- `OPENROUTER_MODEL` is a public configuration value (model name), not a secret - can be stored as plain text
 
 ## Why Environment Variables Need to Be in Both Places?
 

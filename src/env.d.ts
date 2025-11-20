@@ -27,12 +27,11 @@ declare global {
 }
 
 interface ImportMetaEnv {
-  readonly OPENROUTER_API_KEY: string;
-  readonly OPENROUTER_MODEL?: string;
   readonly SUPABASE_URL: string;
   readonly SUPABASE_ANON_KEY: string;
   readonly SUPABASE_SERVICE_ROLE_KEY: string;
-  readonly DEFAULT_USER_ID?: string;
+  readonly OPENROUTER_API_KEY: string;
+  readonly OPENROUTER_MODEL?: string;
 }
 
 interface ImportMeta {
