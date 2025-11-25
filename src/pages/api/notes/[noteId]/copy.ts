@@ -69,7 +69,7 @@ export const POST: APIRoute = async ({ params, locals }) => {
       .from("notes")
       .insert({
         user_id: userId,
-        title: `${originalNote.title} (Copy)`,
+        title: `Kopia: ${originalNote.title}`,
         content: originalNote.content,
       })
       .select()
