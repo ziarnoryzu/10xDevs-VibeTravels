@@ -77,6 +77,34 @@ export function TravelPlanDisplay({ plan, variant, onSave, showGeneratedDate = f
         )}
       </div>
 
+      {/* Info about read-only and AI generation */}
+      <div className="rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 p-4">
+        <div className="flex items-start gap-3">
+          <div className="flex-shrink-0">
+            <svg
+              className="w-5 h-5 text-blue-600 dark:text-blue-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+          </div>
+          <div className="text-sm">
+            <p className="text-blue-900 dark:text-blue-100 font-medium mb-1">Plan jest tylko do odczytu</p>
+            <p className="text-blue-700 dark:text-blue-300">
+              Ten plan został wygenerowany przez sztuczną inteligencję i może zawierać nieścisłości. Możesz wygenerować
+              nowy plan, jeśli potrzebujesz zmian.
+            </p>
+          </div>
+        </div>
+      </div>
+
       {/* Days */}
       <div className="space-y-8">
         {plan.content.days.map((day) => (
