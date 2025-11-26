@@ -4,6 +4,17 @@ import path from "path";
 
 export default defineConfig({
   plugins: [react()],
+  server: {
+    fs: {
+      allow: [".", "node_modules/astro"],
+    },
+  },
+  // Add Astro virtual modules support for tests
+  define: {
+    "import.meta.env.PROD": false,
+    "import.meta.env.DEV": true,
+  },
+  // Configure for Astro virtual modules
   test: {
     environment: "jsdom",
     globals: true,
@@ -19,6 +30,8 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      // Add Astro virtual modules for testing
+      "astro:transitions/client": path.resolve(__dirname, "./test/mocks/astro-transitions-client.ts"),
     },
   },
 });

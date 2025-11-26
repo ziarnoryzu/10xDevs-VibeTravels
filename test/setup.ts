@@ -2,6 +2,12 @@ import "@testing-library/jest-dom";
 import { afterEach, vi } from "vitest";
 import { cleanup } from "@testing-library/react";
 
+// Mock Astro virtual modules for testing
+vi.doMock("astro:transitions/client", () => ({
+  navigate: vi.fn(async (url: string) => {
+    window.location.href = url;
+  }),
+}));
 // Cleanup after each test case
 afterEach(() => {
   cleanup();
