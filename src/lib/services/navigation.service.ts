@@ -1,3 +1,5 @@
+import { navigate as astroNavigate } from "astro:transitions/client";
+
 /**
  * Navigate to a URL with View Transitions support
  * Astro's ViewTransitions component will automatically handle the transition
@@ -10,15 +12,16 @@ export async function navigate(url: string, options?: { delay?: number }): Promi
     await new Promise((resolve) => setTimeout(resolve, delay));
   }
 
-  // Simply set location.href - Astro ViewTransitions will intercept and animate
-  window.location.href = url;
+  // Import and use Astro's official navigate function
+  await astroNavigate(url);
 }
 
 /**
  * Reload current page with View Transitions
  */
 export async function reload(): Promise<void> {
-  window.location.reload();
+  // Use Astro's navigate for smooth transitions instead of hard reload
+  await astroNavigate(window.location.href);
 }
 
 /**

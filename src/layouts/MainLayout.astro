@@ -1,5 +1,5 @@
 ---
-import { ViewTransitions } from "astro:transitions";
+import { ClientRouter } from "astro:transitions";
 import "../styles/global.css";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
@@ -22,7 +22,7 @@ const activePath = Astro.url.pathname;
     <link rel="icon" type="image/png" href="/favicon.png" />
     <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
-    <ViewTransitions />
+    <ClientRouter />
   </head>
   <body>
     <ThemeProvider client:load>
