@@ -52,8 +52,9 @@ export function NotesListView() {
   const handleCreateNote = useCallback(async () => {
     try {
       const newNoteId = await createNote();
-      // Navigate to the new note, preserving the current page for return navigation
-      await navigate(Routes.notes.detail(newNoteId, currentPage));
+
+      const targetUrl = Routes.notes.detail(newNoteId, currentPage);
+      navigate(targetUrl);
     } catch {
       // Error is already handled in the hook and displayed via error state
       toast.error("Nie udało się utworzyć notatki. Spróbuj ponownie.");

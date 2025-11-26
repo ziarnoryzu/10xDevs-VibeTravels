@@ -117,9 +117,6 @@ export function useNotesList(page = 1): UseNotesListReturn {
 
       const newNote = await response.json();
 
-      // Refetch the list to include the new note
-      await fetchNotes();
-
       return newNote.id;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to create note";
@@ -128,7 +125,7 @@ export function useNotesList(page = 1): UseNotesListReturn {
     } finally {
       setIsCreating(false);
     }
-  }, [fetchNotes]);
+  }, []);
 
   // Refetch notes
   const refetch = useCallback(async () => {
